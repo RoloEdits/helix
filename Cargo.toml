@@ -16,6 +16,8 @@ members = [
   "xtask",
 ]
 
+workspace.resolver = "2"
+
 default-members = [
   "helix-term"
 ]
@@ -29,6 +31,7 @@ lto = "fat"
 codegen-units = 1
 strip = true
 opt-level = 3
+panic = "abort"
 
 [profile.integration]
 inherits = "test"
