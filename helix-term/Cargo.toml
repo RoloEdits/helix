@@ -32,6 +32,9 @@ assets = [
 
 [features]
 default = ["git"]
+mimalloc = []
+snmalloc = []
+smalloc = []
 unicode-lines = ["helix-core/unicode-lines", "helix-view/unicode-lines"]
 integration = ["helix-event/integration_test"]
 git = ["helix-vcs/git"]
@@ -74,6 +77,10 @@ grep-matcher = "0.1"
 # markdown doc rendering
 pulldown-cmark = { version = "0.13", default-features = false }
 thiserror.workspace = true
+
+mimalloc = { version = "0.1" }
+snmalloc-rs = { version = "0.7", features = ["native-cpu", "usecxx17", "lto", ] }
+smalloc = { package = "smmalloc", version = "7" }
 
 # opening URLs
 open = "5.3.5"

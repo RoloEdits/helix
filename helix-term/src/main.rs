@@ -4,6 +4,22 @@ use helix_term::application::Application;
 use helix_term::args::Args;
 use helix_term::config::{Config, ConfigLoadError};
 
+cfg_select! {
+    feature = "mimalloc" => {
+        #[global_allocator]
+        static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+    },
+    feature = "snmalloc" => {
+        #[global_allocator]
+        static GLOBAL: snmalloc_rs::SnMalloc = snmalloc_rs::SnMalloc;
+    }
+    feature = "smalloc" => {
+        #[global_allocator]
+        static GLOBAL: smalloc::Smalloc = smalloc::Smalloc::new();
+    }
+    _ => {}
+}
+
 fn setup_logging(verbosity: u64) -> Result<()> {
     let level = match verbosity {
         0 => log::LevelFilter::Warn,
