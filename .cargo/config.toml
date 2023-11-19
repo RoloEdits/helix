@@ -8,10 +8,10 @@
 # to set those most of the time. If downstream does overwrite this its not a huge
 # deal since it will only break tests anyway
 [target."cfg(all())"]
-rustflags = ["--cfg", "tokio_unstable", "-C", "target-feature=-crt-static"]
+linker = "clang"
+rustflags = ["--cfg", "tokio_unstable", "-C", "target-feature=-crt-static", "-C", "target-cpu=native", "-C", "link-arg=-fuse-ld=lld", "-C", "linker-plugin-lto"]
 
 
 [alias]
 xtask = "run --package xtask --"
 integration-test = "test --features integration --profile integration --workspace --test integration"
-
