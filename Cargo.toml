@@ -16,6 +16,8 @@ members = [
   "xtask",
 ]
 
+workspace.resolver = "2"
+
 default-members = [
   "helix-term"
 ]
