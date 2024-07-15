@@ -42,7 +42,7 @@ use helix_core::{
 };
 use helix_view::{
     document::{FormatterError, Mode, SCRATCH_BUFFER_NAME},
-    editor::Action,
+    editor::{self, Action},
     info::Info,
     input::KeyEvent,
     keyboard::KeyCode,
@@ -234,11 +234,16 @@ impl MappableCommand {
                         scroll: None,
                     };
 
-                    if let Err(err) =
-                        (command.fun)(&mut cx, Args::from(args), PromptEvent::Validate)
-                    {
-                        cx.editor.set_error(format!("{err}"));
-                    }
+                    match editor::variables::expand(cx.editor, args) {
+                        Ok(args) => {
+                            if let Err(err) =
+                                (command.fun)(&mut cx, Args::from(&args), PromptEvent::Validate)
+                            {
+                                cx.editor.set_error(format!("{err}"));
+                            }
+                        }
+                        Err(err) => cx.editor.set_error(format!("{err}")),
+                    };
                 }
             }
             Self::Static { fun, .. } => (fun)(cx),

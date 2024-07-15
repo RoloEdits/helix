@@ -1,3 +1,5 @@
+pub mod variables;
+
 use crate::{
     annotations::diagnostics::{DiagnosticFilter, InlineDiagnosticsConfig},
     clipboard::ClipboardProvider,

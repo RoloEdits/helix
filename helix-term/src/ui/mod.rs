@@ -535,4 +535,24 @@ pub mod completers {
             .map(|(name, _)| ((0..), name.into()))
             .collect()
     }
+
+    pub fn echo(_editor: &Editor, input: &str) -> Vec<Completion> {
+        let iter = [
+            "%{basename}",
+            "%{filename}",
+            "%{dirname}",
+            "%{cwd}",
+            "%{linenumber}",
+            "%{selection}",
+            "%{cursorcolumn}",
+            "%{lang}",
+            "%{ext}",
+            "%sh{",
+        ];
+
+        fuzzy_match(input, iter, false)
+            .into_iter()
+            .map(|(name, _)| ((0..), name.into()))
+            .collect()
+    }
 }

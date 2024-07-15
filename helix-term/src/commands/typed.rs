@@ -2418,6 +2418,13 @@ fn read(cx: &mut compositor::Context, mut args: Args, event: PromptEvent) -> any
     Ok(())
 }
 
+fn echo(cx: &mut compositor::Context, args: Args, event: PromptEvent) -> anyhow::Result<()> {
+    if event != PromptEvent::Validate {
+        return Ok(());
+    }
+    cx.editor.set_status(args.raw().to_string());
+    Ok(())
+}
 pub const TYPABLE_COMMAND_LIST: &[TypableCommand] = &[
     TypableCommand {
         name: "quit",
@@ -3039,6 +3046,13 @@ pub const TYPABLE_COMMAND_LIST: &[TypableCommand] = &[
         fun: read,
         signature: CommandSignature::positional(&[completers::filename]),
     },
+   TypableCommand {
+        name: "echo",
+        aliases: &[],
+        doc: "Print the processed input to the editor status",
+        fun: echo,
+        signature: CommandSignature::all(completers::echo)
+    },
 ];
 
 pub static TYPABLE_COMMAND_MAP: Lazy<HashMap<&'static str, &'static TypableCommand>> =
@@ -3077,6 +3091,8 @@ pub(super) fn command_mode(cx: &mut Context) {
                 // as completion input.
                 let (word, len) = shellwords
                     .args()
+                    // Special case for `%sh{...}` completions so that final `}` is excluded from matches.
+                    .filter(|arg| *arg != "}")
                     .last()
                     .map_or(("", 0), |last| (last, last.len()));
 
@@ -3116,9 +3132,23 @@ pub(super) fn command_mode(cx: &mut Context) {
 
             // Handle typable commands
             if let Some(cmd) = typed::TYPABLE_COMMAND_MAP.get(command) {
-                if let Err(err) = (cmd.fun)(cx, shellwords.args(), event) {
+                let shellwords = Shellwords::from(input);
+                let args = shellwords.args();
+
+                if event == PromptEvent::Validate {
+                    match editor::variables::expand(cx.editor, args.raw()) {
+                        Ok(args) => {
+                            if let Err(err) = (cmd.fun)(cx, Args::from(&args), event) {
+                                cx.editor.set_error(format!("{err}"));
+                            }
+                        }
+                        Err(err) => {
+                            cx.editor.set_error(format!("{err}"));
+                        }
+                    };
+                } else if let Err(err) = (cmd.fun)(cx, args, event) {
                     cx.editor.set_error(format!("{err}"));
-                }
+                };
             } else if event == PromptEvent::Validate {
                 cx.editor.set_error(format!("no such command: '{command}'"));
             }
