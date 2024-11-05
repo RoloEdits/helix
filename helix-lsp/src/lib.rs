@@ -289,26 +289,33 @@ pub mod util {
         }
         (start, end)
     }
+
     fn completion_range(
         text: RopeSlice,
         edit_offset: Option<(i128, i128)>,
         replace_mode: bool,
         cursor: usize,
     ) -> Option<(usize, usize)> {
-        let res = match edit_offset {
-            Some((start_offset, end_offset)) => {
-                let start_offset = cursor as i128 + start_offset;
-                if start_offset < 0 {
-                    return None;
+        let res = if replace_mode {
+            find_completion_range(text, replace_mode, cursor)
+        } else {
+            match edit_offset {
+                Some((start_offset, end_offset)) => {
+                    let start_offset = cursor as i128 + start_offset;
+                    if start_offset < 0 {
+                        return None;
+                    }
+                    let end_offset = cursor as i128 + end_offset;
+                    if end_offset > text.len_chars() as i128 {
+                        return None;
+                    }
+
+                    (start_offset as usize, end_offset as usize)
                 }
-                let end_offset = cursor as i128 + end_offset;
-                if end_offset > text.len_chars() as i128 {
-                    return None;
-                }
-                (start_offset as usize, end_offset as usize)
+                None => find_completion_range(text, replace_mode, cursor),
             }
-            None => find_completion_range(text, replace_mode, cursor),
         };
+
         Some(res)
     }
 
