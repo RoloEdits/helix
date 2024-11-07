@@ -31,13 +31,15 @@ assets = [
 ]
 
 [features]
-default = ["git"]
+ default = ["git", "jj"]
 mimalloc = []
 snmalloc = []
 smalloc = []
 unicode-lines = ["helix-core/unicode-lines", "helix-view/unicode-lines"]
 integration = ["helix-event/integration_test"]
+# VCS features
 git = ["helix-vcs/git"]
+jj = ["helix-vcs/jj"]
 
 [[bin]]
 name = "hx"
