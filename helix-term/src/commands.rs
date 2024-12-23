@@ -260,10 +260,16 @@ impl MappableCommand {
                         jobs: cx.jobs,
                         scroll: None,
                     };
-                    let res = typed::execute_command(&mut cx, command, args, PromptEvent::Validate);
+                    let result = typed::execute_command(
+                        &mut cx,
+                        command,
+                        args,
+                        &Args::empty(),
+                        PromptEvent::Validate,
+                    );
                     cx.editor.selected_register = None;
-                    if let Err(e) = res {
-                        cx.editor.set_error(format!("{}", e));
+                    if let Err(err) = result {
+                        cx.editor.set_error(format!("{}", err));
                     }
                 } else {
                     cx.editor.set_error(format!("no such command: '{name}'"));
@@ -7195,7 +7201,7 @@ where
                 return;
             }
             match Args::parse(input, SHELL_SIGNATURE, true, |token| {
-                expansion::expand(cx.editor, token).map_err(|err| err.into())
+                expansion::expand(cx.editor, token, &[]).map_err(|err| err.into())
             }) {
                 Ok(args) => callback_fn(cx, args),
                 Err(err) => cx.editor.set_error(err.to_string()),
