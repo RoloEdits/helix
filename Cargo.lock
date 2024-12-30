@@ -1473,6 +1473,8 @@ dependencies = [
  "allocator-api2",
  "equivalent",
  "foldhash 0.2.0",
+ "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -1748,6 +1750,7 @@ dependencies = [
  "crossterm",
  "foldhash 0.2.0",
  "futures-util",
+ "hashbrown 0.17.1",
  "helix-core",
  "helix-dap",
  "helix-event",
@@ -1766,6 +1769,7 @@ dependencies = [
  "serde",
  "serde_json",
  "slotmap",
+ "smartstring",
  "tempfile",
  "termina",
  "thiserror",
