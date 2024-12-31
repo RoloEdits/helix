@@ -536,12 +536,19 @@ where
     let icon = icons.vcs.icon();
 
     let vcs = if head.is_empty() {
-        format!("{head}")
+        String::new()
+    } else if icon.is_empty() {
+        format!(" {head} ")
     } else {
-        format!("{icon} {head}")
+        format!(" {icon} {head} ")
     };
 
-    write(context, vcs, None);
+    let style = context
+        .editor
+        .theme
+        .try_get_exact("ui.statusline.version-control");
+
+    write(context, vcs, style);
 }
 
 fn render_register<F>(context: &mut RenderContext, write: F)
