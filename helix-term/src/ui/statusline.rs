@@ -278,9 +278,9 @@ where
                 counts
             });
 
-    if warnings > 0 || errors > 0 {
-        write(context, " W ".into(), None);
-    }
+    // if warnings > 0 || errors > 0 {
+    //     write(context, " W ".into(), None);
+    // }
 
     if warnings > 0 {
         write(
