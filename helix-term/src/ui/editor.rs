@@ -24,7 +24,7 @@ use helix_core::{
 };
 use helix_view::{
     annotations::diagnostics::DiagnosticFilter,
-    document::{Mode, SavePoint, DEFAULT_LANGUAGE_NAME, SCRATCH_BUFFER_NAME},
+    document::{Mode, DEFAULT_LANGUAGE_NAME, SCRATCH_BUFFER_NAME},
     editor::{CompleteAction, CursorShapeConfig},
     graphics::{Color, CursorKind, Modifier, Rect, Style},
     input::{KeyEvent, MouseButton, MouseEvent, MouseEventKind},
