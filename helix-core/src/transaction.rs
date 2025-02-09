@@ -378,13 +378,20 @@ impl ChangeSet {
     pub fn update_positions<'a>(&self, positions: impl Iterator<Item = (&'a mut usize, Assoc)>) {
         use Operation::*;
 
-        let mut positions = positions.peekable();
+        log::info!("START `self.changes`: {:?}", self.changes);
+
+        let positions: Vec<_> = positions.collect();
+
+        log::info!("positions: {positions:?}");
+
+        let mut positions = positions.into_iter().peekable();
 
         let mut old_pos = 0;
         let mut new_pos = 0;
         let mut iter = self.changes.iter().enumerate().peekable();
 
         'outer: loop {
+            log::info!("`old_pos`: {old_pos}, `new_pos`: {new_pos}");
             macro_rules! map {
                 ($map: expr, $i: expr) => {
                     loop {
@@ -392,6 +399,7 @@ impl ChangeSet {
                             return;
                         };
                         if **pos < old_pos {
+                            log::info!("`pos` {pos} is less than `old_pos` {old_pos}, reverting last operation");
                             // Positions are not sorted, revert to the last Operation that
                             // contains this position and continue iterating from there.
                             // We can unwrap here since `pos` can not be negative
@@ -400,21 +408,25 @@ impl ChangeSet {
                             for (i, change) in self.changes[..$i].iter().enumerate().rev() {
                                 match change {
                                     Retain(i) => {
+                                        log::info!("handle retain: {i}");
                                         old_pos -= i;
                                         new_pos -= i;
                                     }
                                     Delete(i) => {
+                                        log::info!("handle delete: {i}");
                                         old_pos -= i;
                                     }
                                     Insert(ins) => {
+                                        log::info!("handle insert: {ins}");
                                         new_pos -= ins.chars().count();
                                     }
                                 }
                                 if old_pos <= **pos {
+                                    log::info!("`old_pos` was less than or equal to `{pos}`");
                                     iter = self.changes[i..].iter().enumerate().peekable();
                                 }
                             }
-                            debug_assert!(old_pos <= **pos, "Reverse Iter across changeset works");
+                            assert!(old_pos <= **pos, "Reverse Iter across changeset works");
                             continue 'outer;
                         }
                         #[allow(clippy::redundant_closure_call)]
@@ -496,6 +508,7 @@ impl ChangeSet {
         }
         let out_of_bounds: Vec<_> = positions.collect();
 
+        log::info!("END `self.changes`: {:?}", self.changes);
         panic!("Positions {out_of_bounds:?} are out of range for changeset len {old_pos}!",)
     }
 
