@@ -539,13 +539,27 @@ fn render_version_control<'a, F>(context: &mut RenderContext<'a>, write: F)
 where
     F: Fn(&mut RenderContext<'a>, Span<'a>) + Copy,
 {
-    let head = context
-        .doc
-        .version_control_head()
-        .unwrap_or_default()
-        .to_string();
+    let head = context.doc.version_control_head().unwrap_or_default();
 
-    write(context, head.into());
+    let icon = "";
+
+    let vcs = if head.is_empty() {
+        String::new()
+    } else if icon.is_empty() {
+        format!(" {head} ")
+    } else {
+        format!(" {icon} {head} ")
+    };
+
+    if let Some(style) = context
+        .editor
+        .theme
+        .try_get_exact("ui.statusline.version-control")
+    {
+        write(context, Span::styled(vcs, style));
+    } else {
+        write(context, vcs.into());
+    }
 }
 
 fn render_register<'a, F>(context: &mut RenderContext<'a>, write: F)
