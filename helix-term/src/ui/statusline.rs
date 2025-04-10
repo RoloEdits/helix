@@ -567,7 +567,22 @@ where
         .unwrap_or_default()
         .to_string();
 
-    write(context, head, None);
+    let icon = "";
+
+    let vcs = if head.is_empty() {
+        String::new()
+    } else if icon.is_empty() {
+        format!(" {head} ")
+    } else {
+        format!(" {icon} {head} ")
+    };
+
+    let style = context
+        .editor
+        .theme
+        .try_get_exact("ui.statusline.version-control");
+
+    write(context, vcs, style);
 }
 
 fn render_register<F>(context: &mut RenderContext, write: F)
