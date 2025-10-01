@@ -68,6 +68,20 @@ pub enum Mode {
     Insert = 2,
 }
 
+impl Mode {
+    pub fn is_normal(self) -> bool {
+        matches!(self, Self::Normal)
+    }
+
+    pub fn is_select(self) -> bool {
+        matches!(self, Self::Select)
+    }
+
+    pub fn is_insert(self) -> bool {
+        matches!(self, Self::Insert)
+    }
+}
+
 impl Display for Mode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
