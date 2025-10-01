@@ -3819,14 +3819,21 @@ pub enum Open {
     Above,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum CommentContinuation {
     Enabled,
     Disabled,
 }
 
+impl CommentContinuation {
+    fn is_enabled(self) -> bool {
+        matches!(self, Self::Enabled)
+    }
+}
+
 fn open(cx: &mut Context, open: Open, comment_continuation: CommentContinuation) {
     let count = cx.count();
+    let mode = cx.editor.mode();
     enter_insert_mode(cx);
     let config = cx.editor.config();
     let (view, doc) = current!(cx.editor);
@@ -3856,7 +3863,7 @@ fn open(cx: &mut Context, open: Open, comment_continuation: CommentContinuation)
 
         // Continue the comment leader using the comment tokens of the layer at the current line.
         let continue_comment_token =
-            if comment_continuation == CommentContinuation::Enabled && config.continue_comments {
+            if comment_continuation.is_enabled() && config.continue_comments && mode.is_insert() {
                 text.line(curr_line_num)
                     .first_non_whitespace_char()
                     .map(|c| text.char_to_byte(text.line_to_char(curr_line_num) + c))
