@@ -46,8 +46,11 @@ use helix_core::{
 };
 use helix_view::{
     editor::Action,
-    graphics::{CursorKind, Margin, Modifier, Rect},
-    theme::Style,
+    graphics::{
+        cursor::CursorKind,
+        layout::{Margin, Rect},
+        style::{Modifier, Style},
+    },
     view::ViewPosition,
     Document, DocumentId, Editor,
 };

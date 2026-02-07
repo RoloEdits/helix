@@ -26,7 +26,11 @@ use helix_view::{
     annotations::diagnostics::DiagnosticFilter,
     document::{Mode, SCRATCH_BUFFER_NAME},
     editor::{CompleteAction, CursorShapeConfig},
-    graphics::{Color, CursorKind, Modifier, Rect, Style},
+    graphics::{
+        cursor::CursorKind,
+        layout::Rect,
+        style::{Color, Modifier, Style},
+    },
     input::{KeyEvent, MouseButton, MouseEvent, MouseEventKind},
     keyboard::{KeyCode, KeyModifiers},
     Document, Editor, Theme, View,
@@ -1607,9 +1611,7 @@ impl Component for EditorView {
             );
             if let Some((reg, _)) = cx.editor.macro_recording {
                 let disp = format!("[{}]", reg);
-                let style = style
-                    .fg(helix_view::graphics::Color::Yellow)
-                    .add_modifier(Modifier::BOLD);
+                let style = style.fg(Color::Yellow).add_modifier(Modifier::BOLD);
                 surface.set_string(
                     area.x + area.width.saturating_sub(3),
                     area.y + area.height.saturating_sub(1),

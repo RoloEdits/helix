@@ -3,7 +3,7 @@
 
 use crate::{backend::Backend, buffer::Buffer};
 use helix_view::editor::{Config as EditorConfig, KittyKeyboardProtocolConfig};
-use helix_view::graphics::{CursorKind, Rect};
+use helix_view::graphics::{cursor::CursorKind, layout::Rect};
 use std::io;
 
 mod resize;

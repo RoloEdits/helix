@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use helix_core::{line_ending::str_is_line_ending, unicode::width::UnicodeWidthStr};
-use helix_view::graphics::Style;
+use helix_view::graphics::style::Style;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::text::StyledGrapheme;
@@ -39,7 +39,7 @@ impl<'a> Span<'a> {
     ///
     /// ```rust
     /// # use helix_tui::text::Span;
-    /// # use helix_view::graphics::{Color, Modifier, Style};
+    /// # use helix_view::graphics::style::{Color, Modifier, Style};
     /// let style = Style::default().fg(Color::Yellow).add_modifier(Modifier::ITALIC);
     /// Span::styled("My text", style);
     /// Span::styled(String::from("My text"), style);
@@ -68,7 +68,7 @@ impl<'a> Span<'a> {
     ///
     /// ```rust
     /// # use helix_tui::text::{Span, StyledGrapheme};
-    /// # use helix_view::graphics::{Color, Modifier, Style};
+    /// # use helix_view::graphics::style::{Color, Modifier, Style};
     /// # use std::iter::Iterator;
     /// let style = Style::default().fg(Color::Yellow);
     /// let span = Span::styled("Text", style);

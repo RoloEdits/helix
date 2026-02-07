@@ -9,7 +9,7 @@ use helix_view::annotations::diagnostics::{
     DiagnosticFilter, InlineDiagnosticAccumulator, InlineDiagnosticsConfig,
 };
 
-use helix_view::theme::Style;
+use helix_view::graphics::style::Style;
 use helix_view::{Document, Theme};
 
 use crate::ui::document::{LinePos, TextRenderer};

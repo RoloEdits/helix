@@ -12,8 +12,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Deserializer};
 use toml::{map::Map, Value};
 
-use crate::graphics::UnderlineStyle;
-pub use crate::graphics::{Color, Modifier, Style};
+use crate::graphics::style::{Color, Modifier, Style, UnderlineStyle};
 
 pub static DEFAULT_THEME_DATA: Lazy<Value> = Lazy::new(|| {
     let bytes = include_bytes!("../../theme.toml");

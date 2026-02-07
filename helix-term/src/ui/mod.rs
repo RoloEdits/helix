@@ -21,7 +21,7 @@ use crate::job::{self, Callback};
 pub use completion::Completion;
 pub use editor::EditorView;
 use helix_stdx::rope;
-use helix_view::theme::Style;
+use helix_view::graphics::style::Style;
 pub use markdown::Markdown;
 pub use menu::Menu;
 pub use picker::{Column as PickerColumn, FileLocation, Picker};

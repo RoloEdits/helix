@@ -5,7 +5,7 @@ use cassowary::{
     Constraint as CassowaryConstraint, Expression, Solver, Variable,
     WeightedRelation::{EQ, GE, LE},
 };
-use helix_view::graphics::{Margin, Rect};
+use helix_view::graphics::layout::{Margin, Rect};
 
 use crate::layout::{Constraint, Direction};
 
@@ -71,7 +71,7 @@ impl Layout {
     /// # Examples
     /// ```
     /// # use helix_tui::layout::{Constraint, Direction, Layout};
-    /// # use helix_view::graphics::Rect;
+    /// # use helix_view::graphics::layout::Rect;
     /// let chunks = Layout::default()
     ///     .direction(Direction::Vertical)
     ///     .constraints([Constraint::Length(5), Constraint::Min(0)].as_ref())

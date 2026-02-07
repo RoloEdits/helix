@@ -5,7 +5,7 @@ use crate::{
         DocumentOpenError, DocumentSavedEventFuture, DocumentSavedEventResult, Mode, SavePoint,
     },
     events::{DocumentDidClose, DocumentDidOpen, DocumentFocusLost},
-    graphics::{CursorKind, Rect},
+    graphics::{cursor::CursorKind, layout::Rect},
     handlers::Handlers,
     info::Info,
     input::KeyEvent,

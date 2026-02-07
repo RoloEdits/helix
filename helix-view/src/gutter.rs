@@ -4,7 +4,7 @@ use helix_core::syntax::config::LanguageServerFeature;
 
 use crate::{
     editor::GutterType,
-    graphics::{Style, UnderlineStyle},
+    graphics::style::{Style, UnderlineStyle},
     Document, Editor, Theme, View,
 };
 
@@ -331,7 +331,7 @@ mod tests {
     use super::*;
     use crate::document::Document;
     use crate::editor::{Config, GutterConfig, GutterLineNumbersConfig};
-    use crate::graphics::Rect;
+    use crate::graphics::layout::Rect;
     use crate::DocumentId;
     use arc_swap::ArcSwap;
     use helix_core::{syntax, Rope};

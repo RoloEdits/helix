@@ -21,7 +21,7 @@
 //! ```rust
 //! # use helix_tui::widgets::Block;
 //! # use helix_tui::text::{Span, Spans};
-//! # use helix_view::graphics::{Color, Style};
+//! # use helix_view::graphics::style::{Color, Style};
 //! // A simple string with no styling.
 //! // Converted to Spans(vec![
 //! //   Span { content: Cow::Borrowed("My title"), style: Style { .. } }

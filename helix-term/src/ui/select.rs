@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use helix_view::{graphics::Rect, Editor};
+use helix_view::{graphics::layout::Rect, Editor};
 use tui::{
     buffer::Buffer as Surface,
     widgets::{Block, Widget as _},

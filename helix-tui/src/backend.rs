@@ -4,7 +4,7 @@ use std::io;
 
 use crate::{buffer::Cell, terminal::Config};
 
-use helix_view::graphics::{CursorKind, Rect};
+use helix_view::graphics::{cursor::CursorKind, layout::Rect};
 
 #[cfg(all(feature = "termina", not(windows)))]
 mod termina;

@@ -1,4 +1,4 @@
-use crate::{graphics::Rect, View, ViewId};
+use crate::{graphics::layout::Rect, View, ViewId};
 use slotmap::SlotMap;
 
 // the dimensions are recomputed on window resize/tree change.

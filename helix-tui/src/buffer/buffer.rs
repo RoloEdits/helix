@@ -1,7 +1,10 @@
 use std::cmp::min;
 
 use helix_core::unicode::width::UnicodeWidthStr;
-use helix_view::graphics::{Color, Rect, Style};
+use helix_view::graphics::{
+    layout::Rect,
+    style::{Color, Style},
+};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
@@ -20,7 +23,7 @@ use crate::{
 ///
 /// ```
 /// use helix_tui::buffer::{Buffer, Cell};
-/// use helix_view::graphics::{Rect, Color, UnderlineStyle, Style, Modifier};
+/// use helix_view::graphics::{layout::Rect, style::{Color, UnderlineStyle, Style, Modifier}};
 ///
 /// let mut buf = Buffer::empty(Rect{x: 0, y: 0, width: 10, height: 5});
 /// buf[(0, 2)].set_symbol("x");
@@ -113,7 +116,7 @@ impl Buffer {
     ///
     /// ```
     /// # use helix_tui::buffer::Buffer;
-    /// # use helix_view::graphics::Rect;
+    /// # use helix_view::graphics::layout::Rect;
     /// let rect = Rect::new(200, 100, 10, 10);
     /// let buffer = Buffer::empty(rect);
     /// // Global coordinates inside the Buffer's area
@@ -138,7 +141,7 @@ impl Buffer {
     ///
     /// ```
     /// # use helix_tui::buffer::Buffer;
-    /// # use helix_view::graphics::Rect;
+    /// # use helix_view::graphics::layout::Rect;
     /// let rect = Rect::new(200, 100, 10, 10);
     /// let buffer = Buffer::empty(rect);
     /// // Global coordinates to the top corner of this Buffer's area
@@ -177,7 +180,7 @@ impl Buffer {
     ///
     /// ```
     /// # use helix_tui::buffer::Buffer;
-    /// # use helix_view::graphics::Rect;
+    /// # use helix_view::graphics::layout::Rect;
     /// let rect = Rect::new(200, 100, 10, 10);
     /// let buffer = Buffer::empty(rect);
     /// assert_eq!(buffer.pos_of(0), (200, 100));

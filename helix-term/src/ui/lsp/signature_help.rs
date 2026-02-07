@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use arc_swap::ArcSwap;
 use helix_core::syntax::{self, OverlayHighlights};
-use helix_view::graphics::{Margin, Rect, Style};
+use helix_view::graphics::layout::{Margin, Rect};
+use helix_view::graphics::style::Style;
 use helix_view::input::Event;
 use tui::buffer::Buffer;
 use tui::layout::Alignment;

@@ -1,4 +1,4 @@
-use helix_view::graphics::{Color, Modifier, Style, UnderlineStyle};
+use helix_view::graphics::style::{Color, Modifier, Style, UnderlineStyle};
 
 /// One cell of the terminal. Contains one stylized grapheme.
 #[derive(Debug, Clone, PartialEq, Eq)]

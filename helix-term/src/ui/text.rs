@@ -1,7 +1,7 @@
 use crate::compositor::{Component, Context};
 use tui::buffer::Buffer as Surface;
 
-use helix_view::graphics::Rect;
+use helix_view::graphics::layout::Rect;
 
 pub struct Text {
     pub(crate) contents: tui::text::Text<'static>,

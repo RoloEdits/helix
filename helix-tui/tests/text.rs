@@ -1,5 +1,5 @@
 use helix_tui::text::{Span, Spans, StyledGrapheme, Text};
-use helix_view::graphics::{Color, Modifier, Style};
+use helix_view::graphics::style::{Color, Modifier, Style};
 
 // Text
 #[test]

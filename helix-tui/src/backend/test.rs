@@ -4,7 +4,7 @@ use crate::{
     terminal::Config,
 };
 use helix_core::unicode::width::UnicodeWidthStr;
-use helix_view::graphics::{CursorKind, Rect};
+use helix_view::graphics::{cursor::CursorKind, layout::Rect};
 use std::{fmt::Write, io};
 
 /// A backend used for the integration tests.

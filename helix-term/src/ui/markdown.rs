@@ -14,8 +14,10 @@ use helix_core::{
     RopeSlice, Syntax,
 };
 use helix_view::{
-    graphics::{Margin, Rect, Style},
-    theme::Modifier,
+    graphics::{
+        layout::{Margin, Rect},
+        style::{Modifier, Style},
+    },
     Theme,
 };
 

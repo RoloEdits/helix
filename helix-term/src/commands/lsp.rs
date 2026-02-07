@@ -21,8 +21,8 @@ use helix_stdx::path;
 use helix_view::{
     document::{DocumentInlayHints, DocumentInlayHintsId},
     editor::Action,
+    graphics::style::Style,
     handlers::lsp::SignatureHelpInvoked,
-    theme::Style,
     Document, View,
 };
 

@@ -11,7 +11,7 @@ use helix_view::{
     align_view,
     document::{DocumentOpenError, DocumentSavedEventResult},
     editor::{ConfigEvent, EditorEvent},
-    graphics::Rect,
+    graphics::{cursor::CursorKind, layout::Rect},
     theme,
     tree::Layout,
     Align, Editor,
@@ -1242,7 +1242,6 @@ impl Application {
     }
 
     fn restore_term(&mut self) -> std::io::Result<()> {
-        use helix_view::graphics::CursorKind;
         self.terminal
             .backend_mut()
             .show_cursor(CursorKind::Block)

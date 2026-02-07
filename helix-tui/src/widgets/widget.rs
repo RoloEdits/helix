@@ -1,5 +1,5 @@
 use crate::buffer::Buffer;
-use helix_view::graphics::Rect;
+use helix_view::graphics::layout::Rect;
 
 /// Base requirements for a Widget
 pub trait Widget {

@@ -6,7 +6,7 @@ use crate::{
         Widget,
     },
 };
-use helix_view::graphics::{Rect, Style};
+use helix_view::graphics::{layout::Rect, style::Style};
 
 /// Base widget to be used with all upper level ones. It may be used to display a box border around
 /// the widget and/or add a title.
@@ -15,7 +15,7 @@ use helix_view::graphics::{Rect, Style};
 ///
 /// ```
 /// # use helix_tui::widgets::{Block, BorderType, Borders};
-/// # use helix_view::graphics::{Style, Color};
+/// # use helix_view::graphics::style::{Style, Color};
 /// Block::default()
 ///     .title("Block")
 ///     .borders(Borders::LEFT | Borders::RIGHT)

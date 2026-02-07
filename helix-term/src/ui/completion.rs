@@ -11,11 +11,11 @@ use helix_core::{self as core, chars, fuzzy::MATCHER, Change, Transaction};
 use helix_lsp::{lsp, util, OffsetEncoding};
 use helix_view::{
     editor::CompleteAction,
+    graphics::style::{Color, Modifier, Style},
     handlers::lsp::SignatureHelpInvoked,
-    theme::{Color, Modifier, Style},
     ViewId,
 };
-use helix_view::{graphics::Rect, Document, Editor};
+use helix_view::{graphics::layout::Rect, Document, Editor};
 use nucleo::{
     pattern::{Atom, AtomKind, CaseMatching, Normalization},
     Config, Utf32Str,

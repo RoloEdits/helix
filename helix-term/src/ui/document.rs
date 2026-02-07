@@ -7,11 +7,12 @@ use helix_core::syntax::{self, HighlightEvent, Highlighter, OverlayHighlights};
 use helix_core::text_annotations::TextAnnotations;
 use helix_core::{visual_offset_from_block, Position, RopeSlice};
 use helix_stdx::rope::RopeSliceExt;
-use helix_view::editor::{WhitespaceConfig, WhitespaceRenderValue};
-use helix_view::graphics::Rect;
-use helix_view::theme::Style;
-use helix_view::view::ViewPosition;
-use helix_view::{Document, Theme};
+use helix_view::{
+    editor::{WhitespaceConfig, WhitespaceRenderValue},
+    graphics::{layout::Rect, style::Style},
+    view::ViewPosition,
+    Document, Theme,
+};
 use tui::buffer::Buffer as Surface;
 
 use crate::ui::text_decorations::DecorationManager;

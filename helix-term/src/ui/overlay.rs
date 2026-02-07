@@ -1,6 +1,6 @@
 use helix_core::Position;
 use helix_view::{
-    graphics::{CursorKind, Rect},
+    graphics::{cursor::CursorKind, layout::Rect},
     Editor,
 };
 use tui::buffer::Buffer;

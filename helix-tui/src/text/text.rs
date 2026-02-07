@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use helix_view::graphics::Style;
+use helix_view::graphics::style::Style;
 
 use crate::text::{Span, Spans};
 
@@ -13,7 +13,7 @@ use crate::text::{Span, Spans};
 ///
 /// ```rust
 /// # use helix_tui::text::Text;
-/// # use helix_view::graphics::{Color, Modifier, Style};
+/// # use helix_view::graphics::style::{Color, Modifier, Style};
 /// let style = Style::default().fg(Color::Yellow).add_modifier(Modifier::ITALIC);
 ///
 /// // An initial two lines of `Text` built from a `&str`
@@ -61,7 +61,7 @@ impl<'a> Text<'a> {
     ///
     /// ```rust
     /// # use helix_tui::text::Text;
-    /// # use helix_view::graphics::{Color, Modifier, Style};
+    /// # use helix_view::graphics::style::{Color, Modifier, Style};
     /// let style = Style::default().fg(Color::Yellow).add_modifier(Modifier::ITALIC);
     /// Text::styled("The first line\nThe second line", style);
     /// Text::styled(String::from("The first line\nThe second line"), style);
@@ -111,7 +111,7 @@ impl<'a> Text<'a> {
     ///
     /// ```rust
     /// # use helix_tui::text::Text;
-    /// # use helix_view::graphics::{Color,  Style};
+    /// # use helix_view::graphics::style::{Color,  Style};
     /// let style1 = Style::default().fg(Color::Yellow);
     /// let style2 = Style::default().fg(Color::Yellow).bg(Color::Black);
     /// let mut half_styled_text = Text::styled(String::from("The first line\nThe second line"), style1);
@@ -135,7 +135,7 @@ impl<'a> Text<'a> {
     ///
     /// ```rust
     /// # use helix_tui::text::Text;
-    /// # use helix_view::graphics::{Color, Modifier, Style};
+    /// # use helix_view::graphics::style::{Color, Modifier, Style};
     /// let style = Style::default().fg(Color::Yellow).add_modifier(Modifier::ITALIC);
     /// let mut raw_text = Text::raw("The first line\nThe second line");
     /// let styled_text = Text::styled(String::from("The first line\nThe second line"), style);

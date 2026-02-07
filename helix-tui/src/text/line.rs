@@ -13,7 +13,7 @@ impl Spans<'_> {
     ///
     /// ```rust
     /// # use helix_tui::text::{Span, Spans};
-    /// # use helix_view::graphics::{Color, Style};
+    /// # use helix_view::graphics::style::{Color, Style};
     /// let spans = Spans::from(vec![
     ///     Span::styled("My", Style::default().fg(Color::Yellow)),
     ///     Span::raw(" text"),

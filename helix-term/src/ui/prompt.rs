@@ -3,6 +3,7 @@ use crate::{alt, ctrl, key, shift, ui};
 use arc_swap::ArcSwap;
 use helix_core::syntax;
 use helix_view::document::Mode;
+use helix_view::graphics::cursor::CursorKind;
 use helix_view::input::KeyEvent;
 use helix_view::keyboard::KeyCode;
 use std::sync::Arc;
@@ -17,7 +18,7 @@ use helix_core::{
     Position,
 };
 use helix_view::{
-    graphics::{CursorKind, Margin, Rect},
+    graphics::layout::{Margin, Rect},
     Editor,
 };
 

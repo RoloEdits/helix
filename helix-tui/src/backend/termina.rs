@@ -2,8 +2,12 @@ use std::io::{self, Write as _};
 
 use helix_view::{
     editor::KittyKeyboardProtocolConfig,
-    graphics::{CursorKind, Rect, UnderlineStyle},
-    theme::{self, Color, Modifier},
+    graphics::{
+        cursor::CursorKind,
+        layout::Rect,
+        style::{Color, Modifier, UnderlineStyle},
+    },
+    theme::{self},
 };
 use termina::{
     escape::{

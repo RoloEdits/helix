@@ -1,4 +1,4 @@
-use helix_view::graphics::Rect;
+use helix_view::graphics::layout::Rect;
 
 use super::resize::ResizeBehavior;
 

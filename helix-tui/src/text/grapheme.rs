@@ -1,4 +1,4 @@
-use helix_view::graphics::Style;
+use helix_view::graphics::style::Style;
 
 /// A grapheme associated to a style.
 #[derive(Debug, Clone, PartialEq, Eq)]
