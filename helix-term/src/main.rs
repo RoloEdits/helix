@@ -10,6 +10,8 @@ use mimalloc::MiMalloc;
 static GLOBAL: MiMalloc = MiMalloc;
 
 fn setup_logging(verbosity: u64) -> Result<()> {
+    const MAX_LOG_SIZE: u64 = 20_000_000;
+
     let level = match verbosity {
         0 => log::LevelFilter::Warn,
         1 => log::LevelFilter::Info,
@@ -17,7 +19,20 @@ fn setup_logging(verbosity: u64) -> Result<()> {
         _3_or_more => log::LevelFilter::Trace,
     };
 
-    helix_term::logging::init_file(level, &helix_loader::log_file())?;
+    let log_file = helix_loader::log_file();
+
+    if std::fs::metadata(&log_file).is_ok_and(|metadata| metadata.len() >= MAX_LOG_SIZE) {
+        let mut to_delete = log_file.clone();
+
+        if to_delete.set_extension("log.delete")
+            && !to_delete.try_exists().is_ok_and(|exists| exists)
+        {
+            std::fs::rename(&log_file, &to_delete)?;
+            std::thread::spawn(move || std::fs::remove_file(to_delete));
+        }
+    }
+
+    helix_term::logging::init_file(level, &log_file)?;
 
     Ok(())
 }
