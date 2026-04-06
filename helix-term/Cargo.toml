@@ -76,6 +76,8 @@ grep-matcher = "0.1"
 pulldown-cmark = { version = "0.13", default-features = false }
 thiserror.workspace = true
 
+mimalloc = { version = "0.1.50" }
+
 # opening URLs
 open = "5.3.5"
 
