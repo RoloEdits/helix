@@ -1394,6 +1394,7 @@ pub enum Action {
     Replace,
     HorizontalSplit,
     VerticalSplit,
+    Close,
 }
 
 impl Action {
@@ -2035,6 +2036,18 @@ impl Editor {
                 doc.ensure_view_init(view_id);
                 doc.mark_as_focused();
                 focus_lost
+            }
+            Action::Close => {
+                if let Err(err) = self.close_document(id, false) {
+                    match err {
+                        CloseError::BufferModified(err) => self.set_error(Cow::from(err)),
+                        CloseError::SaveError(error) => {
+                            self.set_error(Cow::from(error.to_string()));
+                        }
+                        CloseError::DoesNotExist => self.set_error("Document does not exist."),
+                    }
+                }
+                return;
             }
         };
 
