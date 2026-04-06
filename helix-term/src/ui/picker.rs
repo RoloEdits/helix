@@ -1161,6 +1161,11 @@ impl<I: 'static + Send + Sync, D: 'static + Send + Sync> Component for Picker<I,
             ctrl!('t') => {
                 self.toggle_preview();
             }
+            ctrl!('q') => {
+                if let Some(option) = self.selection() {
+                    (self.callback_fn)(ctx, option, Action::Close);
+                }
+            }
             _ => {
                 self.prompt_handle_event(event, ctx);
             }
