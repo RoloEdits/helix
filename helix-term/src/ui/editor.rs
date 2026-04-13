@@ -21,7 +21,7 @@ use helix_core::{
     text_annotations::TextAnnotations,
     unicode, visual_offset_from_block, Change, Position, Range, Selection, Transaction,
 };
-use helix_lsp::lsp::SymbolKind;
+use helix_stdx::stack_format;
 use helix_view::{
     annotations::diagnostics::DiagnosticFilter,
     document::{Mode, SCRATCH_BUFFER_NAME},
@@ -864,6 +864,9 @@ impl EditorView {
         }
 
         let config = editor.config();
+        let theme = editor.theme.as_ref();
+
+        let icons = ICONS.load();
 
         let style = editor
             .theme
@@ -906,6 +909,33 @@ impl EditorView {
                     let segment = component.as_os_str().to_string_lossy();
                     let is_directory = components.peek().is_some();
 
+                    if !is_directory {
+                        if let Some(icon) = icons
+                            .fs()
+                            .file()
+                            .and_then(|files| files.get(segment.as_ref()))
+                        {
+                            let style = theme
+                                .try_get_exact(format!("icons.file.{segment}").as_str())
+                                .or_else(|| {
+                                    path.extension().map(|ext| ext.display()).and_then(|ext| {
+                                        theme.try_get_exact(
+                                            stack_format!("icons.file.{ext}").as_str(),
+                                        )
+                                    })
+                                })
+                                .unwrap_or_else(|| icon.style());
+
+                            x = draw_element(
+                                surface,
+                                viewport,
+                                x,
+                                icon.with_padding(0, 2).glyph().as_str(),
+                                style,
+                            );
+                        }
+                    }
+
                     let style = if is_directory {
                         editor.theme.get("ui.text.directory")
                     } else {
@@ -913,6 +943,17 @@ impl EditorView {
                     };
 
                     x = draw_element(surface, viewport, x, &segment, style);
+
+                    if !is_directory && doc.is_modified() {
+                        let icon = icons.ui().indicator().modified();
+                        x = draw_element(
+                            surface,
+                            viewport,
+                            x,
+                            icon.with_padding(1, 0).glyph().as_str(),
+                            icon.style(),
+                        );
+                    }
                 }
             } else {
                 // Handle `[scratch]`
@@ -929,38 +970,22 @@ impl EditorView {
                     draw_separator = true;
                 }
 
-                let style = match symbol.kind {
-                    SymbolKind::MODULE
-                    | SymbolKind::NAMESPACE
-                    | SymbolKind::PACKAGE => editor.theme.get("namespace"),
+                let kind = symbol.kind.as_str();
 
-                    SymbolKind::OBJECT // impl Block
-                    | SymbolKind::STRUCT
-                    | SymbolKind::INTERFACE
-                    | SymbolKind::CLASS => editor.theme.get("type"),
+                let icon_style = editor
+                    .theme
+                    .try_get_exact(stack_format!("icons.kind.{kind}").as_str())
+                    .map_or(style, |style| style);
 
-                    SymbolKind::METHOD => editor.theme.get("function.method"),
-                    SymbolKind::FUNCTION => editor.theme.get("function"),
-
-                    SymbolKind::ENUM => editor.theme.get("type.enum"),
-                    SymbolKind::ENUM_MEMBER => editor.theme.get("type.enum.variant"),
-
-                   SymbolKind::FIELD | SymbolKind::PROPERTY => {
-                        editor.theme.get("variable.other.member")
-                    }
-
-                    SymbolKind::VARIABLE => editor.theme.get("variable"),
-                    SymbolKind::CONSTANT => editor.theme.get("constant"),
-                    SymbolKind::CONSTRUCTOR => editor.theme.get("constructor"),
-                    SymbolKind::STRING => editor.theme.get("string"),
-                    SymbolKind::NUMBER => editor.theme.get("constant.numeric"),
-                    SymbolKind::BOOLEAN => editor.theme.get("constant.builtin.boolean"),
-                    SymbolKind::ARRAY => editor.theme.get("punctuation.bracket"),
-                    SymbolKind::KEY => editor.theme.get("label"),
-                    SymbolKind::NULL => editor.theme.get("constant.builtin"),
-                    SymbolKind::TYPE_PARAMETER => editor.theme.get("type.parameter"),
-                    _ => style,
-                };
+                if let Some(icon) = icons.kind().get(kind) {
+                    x = draw_element(
+                        surface,
+                        viewport,
+                        x,
+                        icon.with_padding(0, 2).glyph().as_str(),
+                        icon_style,
+                    );
+                }
 
                 let text = symbol.name.as_ref();
                 x = draw_element(surface, viewport, x, text, style);
