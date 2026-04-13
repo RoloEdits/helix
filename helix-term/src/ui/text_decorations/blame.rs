@@ -1,5 +1,6 @@
 use helix_core::Position;
 
+use helix_view::icons::ICONS;
 use helix_view::theme::Style;
 
 use crate::ui::document::{LinePos, TextRenderer};
@@ -68,25 +69,35 @@ impl Decoration for InlineBlame {
         let start_drawing_at = (end_of_line - renderer.offset.col as u16) + 6;
         let start_drawing_at_virtual = end_of_line + 6;
 
-        let amount_of_characters_drawn = if renderer
-            .column_in_bounds(start_drawing_at_virtual as usize, 1) { {
-                // the column where we stop drawing the blame
-                let stopped_drawing_at = renderer
-                    .set_string_truncated(
-                        renderer.viewport.x + start_drawing_at,
-                        pos.visual_line,
-                        blame,
-                        renderer.viewport.width.saturating_sub(start_drawing_at) as usize,
-                        |_| self.style,
-                        true,
-                        false,
-                    )
-                    .0;
+        let amount_of_characters_drawn =
+            if renderer.column_in_bounds(start_drawing_at_virtual as usize, 1) {
+                {
+                    let icons = ICONS.load();
+                    let blame = match icons.vcs().branch() {
+                        Some(icon) if !blame.trim().is_empty() => &format!("{icon}{blame}"),
+                        _ => blame,
+                    };
 
-                let line_length = end_of_line - renderer.offset.col as u16;
+                    // the column where we stop drawing the blame
+                    let stopped_drawing_at = renderer
+                        .set_string_truncated(
+                            renderer.viewport.x + start_drawing_at,
+                            pos.visual_line,
+                            blame,
+                            renderer.viewport.width.saturating_sub(start_drawing_at) as usize,
+                            |_| self.style,
+                            true,
+                            false,
+                        )
+                        .0;
 
-                stopped_drawing_at - line_length
-            } } else { 0 };
+                    let line_length = end_of_line - renderer.offset.col as u16;
+
+                    stopped_drawing_at - line_length
+                }
+            } else {
+                0
+            };
 
         Position::new(0, amount_of_characters_drawn as usize)
     }
