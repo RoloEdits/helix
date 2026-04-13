@@ -21,7 +21,7 @@ use helix_core::{
     text_annotations::TextAnnotations,
     unicode, visual_offset_from_block, Change, Position, Range, Selection, Transaction,
 };
-use helix_lsp::lsp::SymbolKind;
+use helix_stdx::stack_format;
 use helix_view::{
     annotations::diagnostics::DiagnosticFilter,
     document::{Mode, SCRATCH_BUFFER_NAME},
@@ -859,6 +859,8 @@ impl EditorView {
         let config = editor.config();
         let theme = &editor.theme;
 
+        let icons = ICONS.load();
+
         let base = theme
             .try_get_exact("ui.breadcrumb")
             .unwrap_or_else(|| theme.get("ui.text"));
@@ -871,14 +873,14 @@ impl EditorView {
         let mut x = viewport.x.saturating_add(1);
         let mut draw_separator = false;
 
-        let mut render = |text: &str, style: Style| {
-            if draw_separator {
-                x = draw(surface, viewport, x, separator, separator_style);
-            } else {
-                draw_separator = true;
-            }
-            x = draw(surface, viewport, x, text, style);
-        };
+        // let mut render = |text: &str, style: Style| {
+        //     if draw_separator {
+        //         x = draw(surface, viewport, x, separator, separator_style);
+        //     } else {
+        //         draw_separator = true;
+        //     }
+        //     x = draw(surface, viewport, x, text, style);
+        // };
 
         if matches!(config.breadcrumb.path, Full | File) {
             if let Some(path) = doc.relative_path() {
@@ -900,14 +902,59 @@ impl EditorView {
                 let mut components = path.components().skip(n).peekable();
 
                 while let Some(component) = components.next() {
+                    if draw_separator {
+                        x = draw(surface, viewport, x, separator, separator_style);
+                    } else {
+                        draw_separator = true;
+                    }
+
                     let component = component.as_os_str().to_string_lossy();
                     let is_directory = components.peek().is_some();
                     let style = if is_directory { directory_style } else { base };
-                    render(&component, style);
+
+                    if !is_directory {
+                        if let Some(icon) = icons
+                            .fs()
+                            .file()
+                            .and_then(|files| files.get(component.as_ref()))
+                        {
+                            let style = theme
+                                .try_get_exact(format!("icons.file.{component}").as_str())
+                                .or_else(|| {
+                                    path.extension().map(|ext| ext.display()).and_then(|ext| {
+                                        theme.try_get_exact(
+                                            stack_format!("icons.file.{ext}").as_str(),
+                                        )
+                                    })
+                                })
+                                .unwrap_or_else(|| icon.style());
+
+                            x = draw(
+                                surface,
+                                viewport,
+                                x,
+                                icon.with_padding(0, 1).glyph().as_str(),
+                                style,
+                            );
+                        }
+                    }
+
+                    x = draw(surface, viewport, x, &component, style);
+
+                    if !is_directory && doc.is_modified() {
+                        let icon = icons.ui().indicator().modified();
+                        x = draw(
+                            surface,
+                            viewport,
+                            x,
+                            icon.with_padding(1, 0).glyph().as_str(),
+                            icon.style(),
+                        );
+                    }
                 }
             } else {
                 // Handle scratch buffers by showing `[scratch]` as the path segment.
-                render(SCRATCH_BUFFER_NAME, base);
+                _ = draw(surface, viewport, x, SCRATCH_BUFFER_NAME, base);
 
                 // NOTE:
                 // We don't need to worry about drawing symbols for scratch
@@ -918,39 +965,30 @@ impl EditorView {
 
         if let Some(breadcrumbs) = doc.breadcrumbs.get(&view.id) {
             for crumb in breadcrumbs {
-                let style = match crumb.kind {
-                    SymbolKind::MODULE
-                    | SymbolKind::NAMESPACE
-                    | SymbolKind::PACKAGE => theme.get("namespace"),
+                if draw_separator {
+                    x = draw(surface, viewport, x, separator, separator_style);
+                } else {
+                    draw_separator = true;
+                }
 
-                    SymbolKind::OBJECT // impl Block
-                    | SymbolKind::STRUCT
-                    | SymbolKind::INTERFACE
-                    | SymbolKind::CLASS => theme.get("type"),
+                let kind = &crumb.kind.as_str();
 
-                    SymbolKind::METHOD => theme.get("function.method"),
-                    SymbolKind::FUNCTION => theme.get("function"),
+                let style = editor
+                    .theme
+                    .try_get_exact(stack_format!("icons.kind.{kind}").as_str())
+                    .unwrap_or(base);
 
-                    SymbolKind::ENUM => theme.get("type.enum"),
-                    SymbolKind::ENUM_MEMBER => theme.get("type.enum.variant"),
+                if let Some(icon) = icons.kind().get(kind) {
+                    x = draw(
+                        surface,
+                        viewport,
+                        x,
+                        icon.with_padding(0, 1).glyph().as_str(),
+                        style,
+                    );
+                }
 
-                   SymbolKind::FIELD
-                   | SymbolKind::PROPERTY => theme.get("variable.other.member"),
-
-                    SymbolKind::VARIABLE => theme.get("variable"),
-                    SymbolKind::CONSTANT => theme.get("constant"),
-                    SymbolKind::CONSTRUCTOR => theme.get("constructor"),
-                    SymbolKind::STRING => theme.get("string"),
-                    SymbolKind::NUMBER => theme.get("constant.numeric"),
-                    SymbolKind::BOOLEAN => theme.get("constant.builtin.boolean"),
-                    SymbolKind::ARRAY => theme.get("punctuation.bracket"),
-                    SymbolKind::KEY => theme.get("label"),
-                    SymbolKind::NULL => theme.get("constant.builtin"),
-                    SymbolKind::TYPE_PARAMETER => theme.get("type.parameter"),
-                    _ => base,
-                };
-
-                render(&crumb.name, style);
+                x = draw(surface, viewport, x, &crumb.name, base);
             }
         }
     }
