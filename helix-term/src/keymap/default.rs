@@ -34,6 +34,10 @@ pub fn default() -> HashMap<Mode, KeyTrie> {
         "B" => move_prev_long_word_start,
         "E" => move_next_long_word_end,
 
+        // #14656
+        "C-down" => move_selection_lines_down,
+        "C-up" => move_selection_lines_up,
+
         "v" => select_mode,
         "G" => goto_line,
         "g" => { "Goto"
@@ -95,9 +99,10 @@ pub fn default() -> HashMap<Mode, KeyTrie> {
         "A-b" => move_parent_node_start,
         "A-a" => select_all_siblings,
 
+
         "%" => select_all,
-        "x" => extend_line_below,
-        "X" => extend_to_line_bounds,
+        "x" => select_line_below,
+        "X" => select_line_above,
         "A-x" => shrink_to_line_bounds,
 
         "m" => { "Match"

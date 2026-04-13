@@ -3751,7 +3751,7 @@ pub const TYPABLE_COMMAND_LIST: &[TypableCommand] = &[
     },
     TypableCommand {
         name: "reload-all",
-        aliases: &["rla"],
+        aliases: &["rla", "ra"],
         doc: "Discard changes and reload all documents from the source files.",
         fun: reload_all,
         completer: CommandCompleter::none(),
