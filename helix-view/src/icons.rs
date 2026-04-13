@@ -429,7 +429,7 @@ static KIND: LazyLock<Kind> = LazyLock::new(|| Kind {
         "operator" => { glyph: "", padding: [1, 2] },
         "type_param" => { glyph: "", padding: [1, 2] },
         "keyword" => { glyph: "", padding: [1, 2] },
-        "color" => { glyph: "■", padding: [0, 0] },
+        "color" => { glyph: "󰚍", padding: [0, 1] },
         "value" => { glyph: "󰎠", padding: [1, 2] },
         "snippet" => { glyph: "", padding: [1, 2] },
         "reference" => { glyph: "", padding: [1, 2] },
@@ -441,7 +441,7 @@ static KIND: LazyLock<Kind> = LazyLock::new(|| Kind {
     },
 });
 
-#[derive(Debug, Default, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub struct Kind {
     enable: bool,
     #[serde(flatten)]
@@ -471,6 +471,15 @@ impl Kind {
             .or_else(|| KIND.icons.get("color"))
             .copied()
             .expect("`color` should be populated in the Lazy impl")
+    }
+}
+
+impl Default for Kind {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            icons: Default::default(),
+        }
     }
 }
 
@@ -512,7 +521,7 @@ impl Diagnostic {
     }
 }
 
-#[derive(Debug, Deserialize, PartialEq, Eq, Clone, Default)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub struct Vcs {
     enable: bool,
     branch: Option<Icon>,
@@ -603,7 +612,22 @@ impl Vcs {
     }
 }
 
-#[derive(Debug, Deserialize, PartialEq, Eq, Clone, Default)]
+impl Default for Vcs {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            branch: Default::default(),
+            added: Default::default(),
+            removed: Default::default(),
+            ignored: Default::default(),
+            modified: Default::default(),
+            renamed: Default::default(),
+            conflict: Default::default(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, PartialEq, Eq, Clone)]
 pub struct Fs {
     enable: bool,
     #[serde(default)]
@@ -629,6 +653,16 @@ impl Fs {
             return None;
         }
         Some(&self.file)
+    }
+}
+
+impl Default for Fs {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            directory: Default::default(),
+            file: Default::default(),
+        }
     }
 }
 
@@ -1478,7 +1512,7 @@ impl Ui {
     #[inline]
     #[must_use]
     pub fn workspace(&self) -> Icon {
-        self.workspace.unwrap_or_else(|| icon!("W"))
+        self.workspace.unwrap_or_else(|| icon!(""))
     }
 
     #[inline]
@@ -1607,14 +1641,14 @@ impl Virtual {
     #[must_use]
     pub fn indentation(&self) -> Icon {
         // Default: U+254E
-        self.indentation.unwrap_or_else(|| icon!("╎"))
+        self.indentation.unwrap_or_else(|| icon!("▏"))
     }
 
     #[inline]
     #[must_use]
     pub fn ruler(&self) -> Icon {
         // TODO: Default: ┊
-        self.ruler.unwrap_or_else(|| icon!(" "))
+        self.ruler.unwrap_or_else(|| icon!("┊"))
     }
 }
 
@@ -1627,7 +1661,7 @@ impl Statusline {
     #[inline]
     #[must_use]
     pub fn separator(&self) -> Icon {
-        self.separator.unwrap_or_else(|| icon!("│"))
+        self.separator.unwrap_or_else(|| icon!(""))
     }
 }
 

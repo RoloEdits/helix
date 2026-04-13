@@ -201,13 +201,13 @@ pub struct InlineBlameConfig {
     /// How the inline blame should look like and the information it includes
     pub format: String,
 }
-
 impl Default for InlineBlameConfig {
     fn default() -> Self {
         Self {
-            show: InlineBlameShow::Never,
+            // #13133
+            show: InlineBlameShow::CursorLine,
             format: "{author}, {time-ago} • {title} • {commit}".to_owned(),
-            auto_fetch: false,
+            auto_fetch: true,
         }
     }
 }
@@ -254,7 +254,7 @@ impl Default for FilePickerConfig {
             deduplicate_links: true,
             parents: true,
             ignore: true,
-            require_git: true,
+            require_git: false, // #12484
             git_ignore: true,
             git_global: true,
             git_exclude: true,
@@ -535,12 +535,21 @@ impl Config {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize, Clone, Copy)]
 #[serde(rename_all = "kebab-case")]
 pub struct BreadcrumbConfig {
     pub enable: bool,
     #[serde(default)]
     pub path: BreadcrumbPathOptions,
+}
+
+impl Default for BreadcrumbConfig {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            path: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize, Clone, Copy)]
