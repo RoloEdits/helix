@@ -10,6 +10,7 @@ use std::{collections::HashMap, path::Path, sync::Arc};
 mod git;
 #[cfg(feature = "jj")]
 mod jj;
+pub use git::blame::FileBlame;
 
 mod diff;
 
@@ -279,8 +280,8 @@ impl DiffProviderRegistry {
 
 /// A union type that includes all types that implement [DiffProvider]. We need this type to allow
 /// cloning [DiffProviderRegistry] as `Clone` cannot be used in trait objects.
-#[derive(Clone)]
-pub enum DiffProvider {
+#[derive(Clone, Debug)]
+enum DiffProvider {
     #[cfg(feature = "git")]
     Git {
         repo: Box<gix::ThreadSafeRepository>,
