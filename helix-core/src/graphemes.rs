@@ -1,6 +1,7 @@
 //! Utility functions to traverse the unicode graphemes of a `Rope`'s text contents.
 //!
 //! Based on <https://github.com/cessen/led/blob/c4fa72405f510b7fd16052f90a598c429b3104a6/src/graphemes.rs>
+use helix_stdx::hint::likely;
 use ropey::{str_utils::byte_to_char_idx, RopeSlice};
 use unicode_segmentation::{GraphemeCursor, GraphemeIncomplete};
 
@@ -101,7 +102,7 @@ impl Display for Grapheme<'_> {
 #[must_use]
 pub fn grapheme_width(g: &str) -> usize {
     // ASCII fast-path.
-    if g.as_bytes()[0] <= 127 {
+    if likely(g.as_bytes()[0] <= 127) {
         // We're only examining the first _byte_. But for UTF-8, when checking
         // for ASCII range values only, that works, but which means we're ignoring
         // graphemes formed with combining characters. However, if it starts with
