@@ -4,7 +4,8 @@
 
 use anyhow::Result;
 use arc_swap::ArcSwap;
-use std::{collections::HashMap, path::Path, sync::Arc};
+use hashbrown::HashMap;
+use std::{path::Path, sync::Arc};
 
 #[cfg(feature = "git")]
 mod git;

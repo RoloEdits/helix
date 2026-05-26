@@ -1,5 +1,6 @@
 use crate::keymap::{self};
 use crate::keymap::{merge_keys, KeyTrie};
+use hashbrown::HashMap;
 use helix_loader::merge_toml_values;
 use helix_view::commands::custom::CustomTypableCommand;
 use helix_view::{
@@ -8,7 +9,6 @@ use helix_view::{
     theme,
 };
 use serde::Deserialize;
-use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
 use std::io::Error as IOError;

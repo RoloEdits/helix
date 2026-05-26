@@ -76,7 +76,6 @@ use crate::job::{self, Jobs};
 use std::{
     char::{ToLowercase, ToUppercase},
     cmp::Ordering,
-    collections::{HashMap, HashSet},
     error::Error,
     fmt,
     future::Future,
@@ -84,6 +83,8 @@ use std::{
     num::NonZeroUsize,
     sync::Arc,
 };
+
+use hashbrown::{HashMap, HashSet};
 
 use std::{
     borrow::Cow,

@@ -1,6 +1,7 @@
-use std::{collections::HashSet, time::Duration};
+use std::time::Duration;
 
 use futures_util::stream::FuturesUnordered;
+use hashbrown::HashSet;
 use helix_event::{cancelable_future, register_hook, send_blocking, AsyncHook};
 use helix_lsp::lsp::{CodeAction, CodeActionOrCommand, CodeActionTriggerKind};
 use helix_view::{

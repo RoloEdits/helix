@@ -57,6 +57,8 @@ helix-loader = { path = "../helix-loader" }
 
 anyhow = "1"
 
+hashbrown.workspace = true
+
 tokio = { version = "1", features = ["rt", "rt-multi-thread", "io-util", "io-std", "time", "process", "macros", "fs", "parking_lot"] }
 tui = { path = "../helix-tui", package = "helix-tui", default-features = false, features = ["termina", "crossterm"] }
 termina = { workspace = true, features = ["event-stream"] }
