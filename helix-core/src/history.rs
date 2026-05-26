@@ -1,4 +1,6 @@
 use crate::{Assoc, ChangeSet, Range, Rope, Selection, Transaction};
+
+use hashbrown::HashSet;
 use regex::Regex;
 use std::num::NonZeroUsize;
 use std::sync::LazyLock;
@@ -181,7 +183,6 @@ impl History {
     }
 
     fn lowest_common_ancestor(&self, mut a: usize, mut b: usize) -> usize {
-        use std::collections::HashSet;
         let mut a_path_set = HashSet::new();
         let mut b_path_set = HashSet::new();
         loop {

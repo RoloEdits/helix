@@ -1,10 +1,11 @@
 use anyhow::Context as _;
 use anyhow::Result;
 use parking_lot::Mutex;
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 use super::{get_repo_dir, open_repo};
+
+use hashbrown::HashMap;
 
 /// Allows us to save compute resources when requesting blame for the same line
 /// To go from an `ObjectId` (which represents a commit) to `LineBLame`, we have to perform some work.

@@ -5,7 +5,7 @@
 
 use std::{borrow::Cow, iter, sync::Arc, time::Duration};
 
-use foldhash::HashMap;
+use hashbrown::HashMap;
 use helix_core::{
     chars::char_is_word, diff::compare_ropes, fuzzy::fuzzy_match, ChangeSet, Rope, RopeSlice,
 };
@@ -526,9 +526,9 @@ pub mod bench {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-
     use super::*;
+    use hashbrown::HashSet;
+    use helix_core::diff::compare_ropes;
     use quickcheck::{Arbitrary, Gen};
 
     impl WordIndex {

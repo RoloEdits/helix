@@ -1556,6 +1556,7 @@ dependencies = [
  "encoding_rs",
  "foldhash 0.2.0",
  "globset",
+ "hashbrown 0.17.1",
  "helix-loader",
  "helix-parsec",
  "helix-stdx",
@@ -1588,6 +1589,7 @@ dependencies = [
  "anyhow",
  "futures-executor",
  "futures-util",
+ "hashbrown 0.17.1",
  "helix-core",
  "helix-dap-types",
  "helix-stdx",
@@ -1605,6 +1607,7 @@ dependencies = [
 name = "helix-dap-types"
 version = "25.7.1"
 dependencies = [
+ "hashbrown 0.17.1",
  "serde",
  "serde_json",
 ]
@@ -1630,6 +1633,7 @@ dependencies = [
  "cc",
  "etcetera",
  "globset",
+ "hashbrown 0.17.1",
  "helix-stdx",
  "log",
  "parking_lot",
@@ -1650,6 +1654,7 @@ dependencies = [
  "futures-executor",
  "futures-util",
  "globset",
+ "hashbrown 0.17.1",
  "helix-core",
  "helix-loader",
  "helix-lsp-types",
@@ -1670,6 +1675,7 @@ name = "helix-lsp-types"
 version = "0.95.1"
 dependencies = [
  "bitflags",
+ "hashbrown 0.17.1",
  "helix-stdx",
  "serde",
  "serde_json",
@@ -1713,6 +1719,7 @@ dependencies = [
  "grep-matcher",
  "grep-regex",
  "grep-searcher",
+ "hashbrown 0.17.1",
  "helix-core",
  "helix-dap",
  "helix-event",
@@ -1757,6 +1764,7 @@ dependencies = [
  "bitflags",
  "cassowary",
  "crossterm",
+ "hashbrown 0.17.1",
  "helix-core",
  "helix-stdx",
  "helix-view",
@@ -1773,6 +1781,7 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "gix",
+ "hashbrown 0.17.1",
  "helix-core",
  "helix-event",
  "helix-stdx",
@@ -3579,6 +3588,7 @@ dependencies = [
 name = "xtask"
 version = "25.7.1"
 dependencies = [
+ "hashbrown 0.17.1",
  "helix-core",
  "helix-loader",
  "helix-stdx",

@@ -26,6 +26,7 @@ unicode-segmentation.workspace = true
 termina = { workspace = true, optional = true }
 termini = "1.0"
 log = "~0.4"
+hashbrown.workspace = true
 
 [target.'cfg(windows)'.dependencies]
 crossterm = { version = "0.28", optional = true }
