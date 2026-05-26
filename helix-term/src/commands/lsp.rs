@@ -37,13 +37,8 @@ use crate::{
     ui::{self, overlay::overlaid, FileLocation, Picker, Popup, PromptEvent},
 };
 
-use std::{
-    collections::{HashSet, VecDeque},
-    fmt::Display,
-    future::Future,
-    path::Path,
-    sync::Arc,
-};
+use hashbrown::HashSet;
+use std::{collections::VecDeque, fmt::Display, future::Future, path::Path, sync::Arc};
 
 /// Gets the first language server that is attached to a document which supports a specific feature.
 /// If there is no configured language server that supports the feature, this displays a status message.

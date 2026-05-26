@@ -24,6 +24,7 @@ anyhow = "1"
 log = "0.4"
 memchr = { version = "2.7", optional = true }
 tempfile = { version = "3.13", optional = true }
+hashbrown.workspace = true
 
 [features]
 git = ["gix"]
