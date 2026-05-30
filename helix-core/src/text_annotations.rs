@@ -198,15 +198,13 @@ impl<A, M> Layer<'_, A, M> {
         self.current_index.set(new_index);
     }
 
-    pub fn consume(&self, char_idx: usize, get_char_idx: impl Fn(&A) -> usize) -> Option<&A> {
-        let annot = self.annotations.get(self.current_index.get())?;
-        debug_assert!(get_char_idx(annot) >= char_idx);
-        if get_char_idx(annot) == char_idx {
-            self.current_index.set(self.current_index.get() + 1);
-            Some(annot)
-        } else {
-            None
-        }
+    #[inline(never)]
+    pub fn consume(&self) -> Option<&A> {
+        let current = self.current_index.get();
+        debug_assert!(current < self.annotations.len());
+        let annotation = self.annotations.get(current)?;
+        self.current_index.set(current + 1);
+        Some(annotation)
     }
 }
 
@@ -370,21 +368,32 @@ impl<'a> TextAnnotations<'a> {
         self.line_annotations.clear();
     }
 
+    #[inline(never)]
     pub(crate) fn next_inline_annotation_at(
         &self,
-        char_idx: usize,
+        idx: usize,
     ) -> Option<(&InlineAnnotation, Option<Highlight>)> {
-        self.inline_annotations.iter().find_map(|layer| {
-            let annotation = layer.consume(char_idx, |annot| annot.char_idx)?;
-            Some((annotation, layer.metadata))
-        })
+        for layer in &self.inline_annotations {
+            if let Some(annot) = layer.annotations.get(layer.current_index.get()) {
+                if annot.char_idx == idx {
+                    if let Some(annotation) = layer.consume() {
+                        return Some((annotation, layer.metadata));
+                    }
+                }
+            }
+        }
+        None
     }
 
-    pub(crate) fn overlay_at(&self, char_idx: usize) -> Option<(&Overlay, Option<Highlight>)> {
+    pub(crate) fn overlay_at(&self, idx: usize) -> Option<(&Overlay, Option<Highlight>)> {
         let mut overlay = None;
         for layer in &self.overlays {
-            while let Some(new_overlay) = layer.consume(char_idx, |annot| annot.char_idx) {
-                overlay = Some((new_overlay, layer.metadata));
+            while let Some(annot) = layer.annotations.get(layer.current_index.get()) {
+                if annot.char_idx == idx {
+                    overlay = Some((layer.consume()?, layer.metadata));
+                } else {
+                    break;
+                }
             }
         }
         overlay
