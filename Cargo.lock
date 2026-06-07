@@ -1708,6 +1708,7 @@ dependencies = [
  "cassowary",
  "crossterm",
  "helix-core",
+ "helix-stdx",
  "helix-view",
  "log",
  "once_cell",
