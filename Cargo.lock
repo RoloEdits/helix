@@ -2877,8 +2877,7 @@ dependencies = [
 [[package]]
 name = "termina"
 version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9048a889effe34a5cddee0af7f53285198b16dca3be510858d38dfdb3e62a04e"
+source = "git+https://github.com/helix-editor/termina.git?rev=974b0ab8c27ae9bb8d224d020a5d58ffdd06bb31#974b0ab8c27ae9bb8d224d020a5d58ffdd06bb31"
 dependencies = [
  "bitflags",
  "futures-core",
