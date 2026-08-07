@@ -10,7 +10,7 @@ export RUSTFLAGS := "-Ctarget-cpu=native -Clinker=clang -Clink-arg=-fuse-ld=lld 
 default: build
 
 build:
-    cargo build --release --bin hx --features smalloc
+    cargo +nightly build --release --bin hx --features smalloc -Zbuild-std
 
 install: build
     mkdir -p ~/.local/bin
