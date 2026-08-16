@@ -260,26 +260,27 @@ impl MappableCommand {
                         jobs: cx.jobs,
                         scroll: None,
                     };
-                    if let Err(e) = typed::execute_command(
+
+                    if let Err(err) = typed::execute_command(
                         &mut cx,
                         command,
                         args,
                         &Args::empty(),
                         PromptEvent::Validate,
                     ) {
-                        cx.editor.set_error(format!("{}", e));
+                        cx.editor.set_error(|| format!("{}", err));
                     }
                 } else {
-                    cx.editor.set_error(format!("no such command: '{name}'"));
+                    cx.editor.set_error(|| format!("no such command: '{name}'"));
                 }
             }
             Self::Static { fun, .. } => (fun)(cx),
             Self::Macro { keys, .. } => {
                 // Protect against recursive macros.
                 if cx.editor.macro_replaying.contains(&'@') {
-                    cx.editor.set_error(
-                        "Cannot execute macro because the [@] register is already playing a macro",
-                    );
+                    cx.editor.set_error(|| {
+                        "Cannot execute macro because the [@] register is already playing a macro"
+                    });
                     return;
                 }
                 cx.editor.macro_replaying.push('@');
@@ -1094,7 +1095,7 @@ fn align_selections(cx: &mut Context) {
 
         if coords.row != anchor_coords.row {
             cx.editor
-                .set_error("align cannot work with multi line selections");
+                .set_error(|| "align cannot work with multi line selections");
             return;
         }
         if coords.row != previous_line {
@@ -1518,8 +1519,9 @@ fn goto_file_impl(cx: &mut Context, action: Action) {
         if path.is_dir() {
             let picker = ui::file_picker(cx.editor, path.into());
             cx.push_layer(Box::new(overlaid(picker)));
-        } else if let Err(e) = cx.editor.open(path, action) {
-            cx.editor.set_error(format!("Open file failed: {:?}", e));
+        } else if let Err(err) = cx.editor.open(path, action) {
+            cx.editor
+                .set_error(|| format!("Open file failed: {:?}", err));
         }
     }
 }
@@ -1541,8 +1543,9 @@ fn open_url(cx: &mut Context, url: Url, action: Action) {
     if path.is_dir() {
         let picker = ui::file_picker(cx.editor, path.into());
         cx.push_layer(Box::new(overlaid(picker)));
-    } else if let Err(e) = cx.editor.open(path, action) {
-        cx.editor.set_error(format!("Open file failed: {:?}", e));
+    } else if let Err(err) = cx.editor.open(path, action) {
+        cx.editor
+            .set_error(|| format!("Open file failed: {:?}", err));
     }
 }
 
@@ -1572,8 +1575,8 @@ fn open_url_in_callback(
     if path.is_dir() {
         let picker = ui::file_picker(editor, path.into());
         compositor.push(Box::new(overlaid(picker)));
-    } else if let Err(e) = editor.open(path, action) {
-        editor.set_error(format!("Open file failed: {:?}", e));
+    } else if let Err(err) = editor.open(path, action) {
+        editor.set_error(|| format!("Open file failed: {:?}", err));
     }
 }
 
@@ -2218,7 +2221,7 @@ fn select_regex(cx: &mut Context) {
             {
                 doc.set_selection(view.id, selection);
             } else if event == PromptEvent::Validate {
-                cx.editor.set_error("nothing selected");
+                cx.editor.set_error(|| "nothing selected");
             }
         },
     );
@@ -2313,7 +2316,7 @@ fn search_impl(
             if wrap_around && mat.is_some() {
                 editor.set_status("Wrapped around document");
             } else {
-                editor.set_error("No more matches");
+                editor.set_error(|| "No more matches");
             }
         }
     }
@@ -2414,6 +2417,15 @@ fn search_next_or_prev_impl(cx: &mut Context, movement: Movement, direction: Dir
     let config = cx.editor.config();
     let scrolloff = config.scrolloff;
     if let Some(query) = cx.editor.registers.first(register, cx.editor) {
+        // TODO: `query` holds the shared lifetime of `cx.editor`, so the else
+        // branch cannot call `set_error` which takes a `&mut self` on `cx.editor`
+        // as its held.
+        //
+        // As view types don't exist, we could probably change the signature of
+        // `first` (and its inner `read`) to take the needed fields of `Editor`
+        // instead of borrowing the whole editor for the duration of the lifetime.
+        let query = query.into_owned();
+
         let search_config = &config.search;
         let case_insensitive = if search_config.smart_case {
             !query.chars().any(char::is_uppercase)
@@ -2443,8 +2455,7 @@ fn search_next_or_prev_impl(cx: &mut Context, movement: Movement, direction: Dir
                 );
             }
         } else {
-            let error = format!("Invalid regex: {}", query);
-            cx.editor.set_error(error);
+            cx.editor.set_error(|| format!("Invalid regex: {}", query));
         }
     }
 }
@@ -2529,7 +2540,7 @@ fn search_selection_impl(cx: &mut Context, detect_word_boundaries: bool) {
             cx.editor.registers.last_search_register = register;
             cx.editor.set_status(msg)
         }
-        Err(err) => cx.editor.set_error(err.to_string()),
+        Err(err) => cx.editor.set_error(|| err.to_string()),
     }
 }
 
@@ -2569,7 +2580,7 @@ fn make_search_word_bounded(cx: &mut Context) {
             cx.editor.registers.last_search_register = register;
             cx.editor.set_status(msg)
         }
-        Err(err) => cx.editor.set_error(err.to_string()),
+        Err(err) => cx.editor.set_error(|| err.to_string()),
     }
 }
 
@@ -2795,9 +2806,9 @@ fn global_search(cx: &mut Context) {
               action| {
             let doc = match cx.editor.open(path, action) {
                 Ok(id) => doc_mut!(cx.editor, &id),
-                Err(e) => {
+                Err(err) => {
                     cx.editor
-                        .set_error(format!("Failed to open file '{}': {}", path.display(), e));
+                        .set_error(|| format!("Failed to open file '{}': {}", path.display(), err));
                     return;
                 }
             };
@@ -2807,9 +2818,9 @@ fn global_search(cx: &mut Context) {
             let view = view_mut!(cx.editor);
             let text = doc.text();
             if line_start >= text.len_lines() {
-                cx.editor.set_error(
-                    "The line you jumped to does not exist anymore because the file has changed.",
-                );
+                cx.editor.set_error(|| {
+                    "The line you jumped to does not exist anymore because the file has changed."
+                });
                 return;
             }
             let start = text.line_to_char(line_start);
@@ -3041,7 +3052,7 @@ fn delete_selection_impl(cx: &mut Context, op: Operation, yank: YankAction) {
             .register
             .unwrap_or_else(|| cx.editor.config.load().default_yank_register);
         if let Err(err) = cx.editor.registers.write(reg_name, values) {
-            cx.editor.set_error(err.to_string());
+            cx.editor.set_error(|| err.to_string());
             return;
         }
     }
@@ -3466,7 +3477,7 @@ fn append_mode(cx: &mut Context) {
 fn file_picker(cx: &mut Context) {
     let root = find_workspace().0;
     if !root.exists() {
-        cx.editor.set_error("Workspace directory does not exist");
+        cx.editor.set_error(|| "Workspace directory does not exist");
         return;
     }
     let picker = ui::file_picker(cx.editor, root);
@@ -3483,14 +3494,14 @@ fn file_picker_in_current_buffer_directory(cx: &mut Context) {
         None => {
             let cwd = helix_stdx::env::current_working_dir();
             if !cwd.exists() {
-                cx.editor.set_error(
-                    "Current buffer has no parent and current working directory does not exist",
-                );
+                cx.editor.set_error(|| {
+                    "Current buffer has no parent and current working directory does not exist"
+                });
                 return;
             }
-            cx.editor.set_error(
-                "Current buffer has no parent, opening file picker in current working directory",
-            );
+            cx.editor.set_error(|| {
+                "Current buffer has no parent, opening file picker in current working directory"
+            });
             cwd
         }
     };
@@ -3503,7 +3514,7 @@ fn file_picker_in_current_directory(cx: &mut Context) {
     let cwd = helix_stdx::env::current_working_dir();
     if !cwd.exists() {
         cx.editor
-            .set_error("Current working directory does not exist");
+            .set_error(|| "Current working directory does not exist");
         return;
     }
     let picker = ui::file_picker(cx.editor, cwd);
@@ -3513,7 +3524,7 @@ fn file_picker_in_current_directory(cx: &mut Context) {
 fn file_explorer(cx: &mut Context) {
     let root = find_workspace().0;
     if !root.exists() {
-        cx.editor.set_error("Workspace directory does not exist");
+        cx.editor.set_error(|| "Workspace directory does not exist");
         return;
     }
 
@@ -3532,14 +3543,14 @@ fn file_explorer_in_current_buffer_directory(cx: &mut Context) {
         None => {
             let cwd = helix_stdx::env::current_working_dir();
             if !cwd.exists() {
-                cx.editor.set_error(
-                    "Current buffer has no parent and current working directory does not exist",
-                );
+                cx.editor.set_error(|| {
+                    "Current buffer has no parent and current working directory does not exist"
+                });
                 return;
             }
-            cx.editor.set_error(
-                "Current buffer has no parent, opening file explorer in current working directory",
-            );
+            cx.editor.set_error(|| {
+                "Current buffer has no parent, opening file explorer in current working directory"
+            });
             cwd
         }
     };
@@ -3553,7 +3564,7 @@ fn file_explorer_in_current_directory(cx: &mut Context) {
     let cwd = helix_stdx::env::current_working_dir();
     if !cwd.exists() {
         cx.editor
-            .set_error("Current working directory does not exist");
+            .set_error(|| "Current working directory does not exist");
         return;
     }
 
@@ -3797,7 +3808,7 @@ fn changed_file_picker(cx: &mut Context) {
     let cwd: Arc<Path> = Arc::from(helix_stdx::env::current_working_dir().as_path());
     if !cwd.exists() {
         cx.editor
-            .set_error("Current working directory does not exist");
+            .set_error(|| "Current working directory does not exist");
         return;
     }
 
@@ -3887,13 +3898,14 @@ fn changed_file_picker(cx: &mut Context) {
         },
         |cx, meta: &FileChange, action| {
             let path_to_open = meta.path();
-            if let Err(e) = cx.editor.open(path_to_open, action) {
-                let err = if let Some(err) = e.source() {
-                    format!("{}", err)
-                } else {
-                    format!("unable to open \"{}\"", path_to_open.display())
-                };
-                cx.editor.set_error(err);
+            if let Err(err) = cx.editor.open(path_to_open, action) {
+                cx.editor.set_error(|| {
+                    if let Some(err) = err.source() {
+                        format!("{}", err)
+                    } else {
+                        format!("unable to open \"{}\"", path_to_open.display())
+                    }
+                });
             }
         },
     )
@@ -4015,7 +4027,7 @@ fn last_picker(cx: &mut Context) {
         if let Some(picker) = compositor.last_picker.take() {
             compositor.push(picker);
         } else {
-            cx.editor.set_error("no last picker")
+            cx.editor.set_error(|| "no last picker")
         }
     }));
 }
@@ -4063,17 +4075,22 @@ pub(crate) fn blame_line_impl(editor: &mut Editor, doc_id: DocumentId, cursor_li
                     .expect("exists since we return from the function earlier if it does not");
                 doc.is_blame_potentially_out_of_date = false;
             } else {
-                editor.set_error("Could not get path of document");
+                editor.set_error(|| "Could not get path of document");
             };
             return;
         }
         Ok(line_blame) => line_blame,
-        Err(err @ (LineBlameError::NotCommittedYet | LineBlameError::NotReadyYet)) => {
-            editor.set_status(err.to_string());
-            return;
-        }
-        Err(err @ LineBlameError::NoFileBlame(_, _)) => {
-            editor.set_error(err.to_string());
+        Err(
+            err @ (LineBlameError::NotCommittedYet
+            | LineBlameError::NotReadyYet
+            | LineBlameError::NoFileBlame(_, _)),
+        ) => {
+            // TODO: This is done as `LineBlameError<'document>` has a lifetime
+            // of `document`, which is derived from `editor.document(doc_id)`,
+            // so we have a `&self` borrow for `editor` there as well as the
+            // `&mut` for `set_error`.
+            let err = err.to_string();
+            editor.set_error(|| err);
             return;
         }
     };
@@ -4195,7 +4212,7 @@ async fn make_format_callback(
             }
             Err(err) => {
                 if write.is_none() {
-                    editor.set_error(err.to_string());
+                    editor.set_error(|| err.to_string());
                     return;
                 }
                 log::info!("failed to format '{}': {err}", doc.display_name());
@@ -4205,7 +4222,7 @@ async fn make_format_callback(
         if let Some((path, force)) = write {
             let id = doc.id();
             if let Err(err) = editor.save(id, path, force) {
-                editor.set_error(format!("Error saving: {}", err));
+                editor.set_error(|| format!("Error saving: {}", err));
             }
         }
     }));
@@ -4489,7 +4506,7 @@ fn goto_last_accessed_file(cx: &mut Context) {
     if let Some(alt) = view.docs_access_history.pop() {
         cx.editor.switch(alt, Action::Replace);
     } else {
-        cx.editor.set_error("no last accessed buffer")
+        cx.editor.set_error(|| "no last accessed buffer")
     }
 }
 
@@ -4517,7 +4534,7 @@ fn goto_last_modified_file(cx: &mut Context) {
     if let Some(alt) = alternate_file {
         cx.editor.switch(alt, Action::Replace);
     } else {
-        cx.editor.set_error("no last modified buffer")
+        cx.editor.set_error(|| "no last modified buffer")
     }
 }
 
@@ -4865,7 +4882,7 @@ pub mod insert {
                 key!(Enter) => {
                     if count != 1 {
                         cx.editor
-                            .set_error("inserting multiple newlines not yet supported");
+                            .set_error(|| "inserting multiple newlines not yet supported");
                         return;
                     }
                     insert_newline(cx)
@@ -5260,7 +5277,7 @@ fn yank_impl(editor: &mut Editor, register: char) {
             "yanked {selections} selection{} to register {register}",
             if selections == 1 { "" } else { "s" }
         )),
-        Err(err) => editor.set_error(err.to_string()),
+        Err(err) => editor.set_error(|| err.to_string()),
     }
 }
 
@@ -5285,7 +5302,7 @@ fn yank_joined_impl(editor: &mut Editor, separator: &str, register: char) {
             "joined and yanked {selections} selection{} to register {register}",
             if selections == 1 { "" } else { "s" }
         )),
-        Err(err) => editor.set_error(err.to_string()),
+        Err(err) => editor.set_error(|| err.to_string()),
     }
 }
 
@@ -5320,7 +5337,7 @@ pub(crate) fn yank_main_selection_to_register(editor: &mut Editor, register: cha
 
     match editor.registers.write(register, vec![selection]) {
         Ok(_) => editor.set_status(format!("yanked primary selection to register {register}",)),
-        Err(err) => editor.set_error(err.to_string()),
+        Err(err) => editor.set_error(|| err.to_string()),
     }
 }
 
@@ -5735,7 +5752,7 @@ fn format_selections(cx: &mut Context) {
 
     if doc.selection(view_id).len() != 1 {
         cx.editor
-            .set_error("format_selections only supports a single selection for now");
+            .set_error(|| "format_selections only supports a single selection for now");
         return;
     }
 
@@ -5751,7 +5768,7 @@ fn format_selections(cx: &mut Context) {
         })
     else {
         cx.editor
-            .set_error("No configured language server supports range formatting");
+            .set_error(|| "No configured language server supports range formatting");
         return;
     };
 
@@ -5929,7 +5946,7 @@ fn keep_or_remove_selections_impl(cx: &mut Context, remove: bool) {
             {
                 doc.set_selection(view.id, selection);
             } else if event == PromptEvent::Validate {
-                cx.editor.set_error("no selections remaining");
+                cx.editor.set_error(|| "no selections remaining");
             }
         },
     )
@@ -5965,7 +5982,7 @@ fn remove_primary_selection(cx: &mut Context) {
 
     let selection = doc.selection(view.id);
     if selection.len() == 1 {
-        cx.editor.set_error("no selections remaining");
+        cx.editor.set_error(|| "no selections remaining");
         return;
     }
     let index = selection.primary_index();
@@ -6500,7 +6517,7 @@ fn vsplit_new(cx: &mut Context) {
 fn wclose(cx: &mut Context) {
     if cx.editor.tree.views().count() == 1 {
         if let Err(err) = typed::buffers_remaining_impl(cx.editor) {
-            cx.editor.set_error(err.to_string());
+            cx.editor.set_error(|| err.to_string());
             return;
         }
     }
@@ -6572,7 +6589,8 @@ fn copy_between_registers(cx: &mut Context) {
         };
 
         let Some(values) = cx.editor.registers.read(source, cx.editor) else {
-            cx.editor.set_error(format!("register {source} is empty"));
+            cx.editor
+                .set_error(|| format!("register {source} is empty"));
             return;
         };
         let values: Vec<_> = values.map(|value| value.to_string()).collect();
@@ -6594,7 +6612,7 @@ fn copy_between_registers(cx: &mut Context) {
                     "yanked {n_values} value{} from register {source} to {dest}",
                     if n_values == 1 { "" } else { "s" }
                 )),
-                Err(err) => cx.editor.set_error(err.to_string()),
+                Err(err) => cx.editor.set_error(|| err.to_string()),
             }
         });
     });
@@ -6928,7 +6946,7 @@ fn surround_replace(cx: &mut Context) {
             match surround::get_surround_pos(doc.syntax(), text, selection, surround_ch, count) {
                 Ok(c) => c,
                 Err(err) => {
-                    cx.editor.set_error(err.to_string());
+                    cx.editor.set_error(|| err.to_string());
                     return;
                 }
             };
@@ -6999,7 +7017,7 @@ fn surround_delete(cx: &mut Context) {
             match surround::get_surround_pos(doc.syntax(), text, selection, surround_ch, count) {
                 Ok(c) => c,
                 Err(err) => {
-                    cx.editor.set_error(err.to_string());
+                    cx.editor.set_error(|| err.to_string());
                     return;
                 }
             };
@@ -7061,7 +7079,7 @@ fn shell_keep_pipe(cx: &mut Context) {
         }
 
         if ranges.is_empty() {
-            cx.editor.set_error("No selections remaining");
+            cx.editor.set_error(|| "No selections remaining");
             return;
         }
 
@@ -7178,7 +7196,7 @@ fn shell(cx: &mut compositor::Context, cmd: &str, behavior: &ShellBehavior) {
                     output
                 }
                 Err(err) => {
-                    cx.editor.set_error(err.to_string());
+                    cx.editor.set_error(|| err.to_string());
                     return;
                 }
             }
@@ -7239,7 +7257,7 @@ where
                 expansion::expand(cx.editor, token, &[]).map_err(|err| err.into())
             }) {
                 Ok(args) => callback_fn(cx, args),
-                Err(err) => cx.editor.set_error(err.to_string()),
+                Err(err) => cx.editor.set_error(|| err.to_string()),
             }
         },
     );
@@ -7381,7 +7399,7 @@ fn goto_next_tabstop_impl(cx: &mut Context, direction: Direction) {
     let (view, doc) = current!(cx.editor);
     let view_id = view.id;
     let Some(mut snippet) = doc.active_snippet.take() else {
-        cx.editor.set_error("no snippet is currently active");
+        cx.editor.set_error(|| "no snippet is currently active");
         return;
     };
     let tabstop = match direction {
@@ -7429,7 +7447,7 @@ fn record_macro(cx: &mut Context) {
             Ok(_) => cx
                 .editor
                 .set_status(format!("Recorded to register [{}]", reg)),
-            Err(err) => cx.editor.set_error(err.to_string()),
+            Err(err) => cx.editor.set_error(|| err.to_string()),
         }
     } else {
         let reg = cx.register.take().unwrap_or('@');
@@ -7443,10 +7461,12 @@ fn replay_macro(cx: &mut Context) {
     let reg = cx.register.unwrap_or('@');
 
     if cx.editor.macro_replaying.contains(&reg) {
-        cx.editor.set_error(format!(
-            "Cannot replay from register [{}] because already replaying from same register",
-            reg
-        ));
+        cx.editor.set_error(|| {
+            format!(
+                "Cannot replay from register [{}] because already replaying from same register",
+                reg
+            )
+        });
         return;
     }
 
@@ -7460,12 +7480,12 @@ fn replay_macro(cx: &mut Context) {
         match helix_view::input::parse_macro(&keys) {
             Ok(keys) => keys,
             Err(err) => {
-                cx.editor.set_error(format!("Invalid macro: {}", err));
+                cx.editor.set_error(|| format!("Invalid macro: {}", err));
                 return;
             }
         }
     } else {
-        cx.editor.set_error(format!("Register [{}] empty", reg));
+        cx.editor.set_error(|| format!("Register [{}] empty", reg));
         return;
     };
 
@@ -7697,8 +7717,9 @@ fn lsp_or_syntax_symbol_picker(cx: &mut Context) {
     } else if doc.syntax().is_some() {
         syntax_symbol_picker(cx);
     } else {
-        cx.editor
-            .set_error("No language server supporting document symbols or syntax info available");
+        cx.editor.set_error(|| {
+            "No language server supporting document symbols or syntax info available"
+        });
     }
 }
 

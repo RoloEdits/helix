@@ -1568,16 +1568,26 @@ impl Editor {
         self.status_msg = Some((status, Severity::Info));
     }
 
-    #[inline]
-    pub fn set_error<T: Into<Cow<'static, str>>>(&mut self, error: T) {
-        let error = error.into();
+    #[cold]
+    #[inline(never)]
+    pub fn set_error<C, M>(&mut self, message: M)
+    where
+        C: Into<Cow<'static, str>>,
+        M: FnOnce() -> C,
+    {
+        let error = message().into();
         log::debug!("editor error: {}", error);
         self.status_msg = Some((error, Severity::Error));
     }
 
-    #[inline]
-    pub fn set_warning<T: Into<Cow<'static, str>>>(&mut self, warning: T) {
-        let warning = warning.into();
+    #[cold]
+    #[inline(never)]
+    pub fn set_warning<C, M>(&mut self, message: M)
+    where
+        C: Into<Cow<'static, str>>,
+        M: FnOnce() -> C,
+    {
+        let warning = message().into();
         log::warn!("editor warning: {}", warning);
         self.status_msg = Some((warning, Severity::Warning));
     }
@@ -2058,11 +2068,11 @@ impl Editor {
             Action::Close => {
                 if let Err(err) = self.close_document(id, false) {
                     match err {
-                        CloseError::BufferModified(err) => self.set_error(Cow::from(err)),
+                        CloseError::BufferModified(err) => self.set_error(|| err),
                         CloseError::SaveError(error) => {
-                            self.set_error(Cow::from(error.to_string()));
+                            self.set_error(|| error.to_string());
                         }
-                        CloseError::DoesNotExist => self.set_error("Document does not exist."),
+                        CloseError::DoesNotExist => self.set_error(|| "Document does not exist."),
                     }
                 }
                 return;
@@ -2551,7 +2561,7 @@ impl Editor {
                 let save_event = match save_event {
                     Ok(event) => event,
                     Err(err) => {
-                        self.set_error(err.to_string());
+                        self.set_error(|| err.to_string());
                         bail!(err);
                     }
                 };
