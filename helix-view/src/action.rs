@@ -61,11 +61,11 @@ impl Action {
 
         Self::new(title, priority, move |editor| {
             if editor.document(doc_id).map(|doc| doc.version()) != Some(version) {
-                editor.set_error("Document changed since code actions were requested");
+                editor.set_error(|| "Document changed since code actions were requested");
                 return;
             }
             let Some(language_server) = editor.language_server_by_id(server_id) else {
-                editor.set_error("Language Server disappeared");
+                editor.set_error(|| "Language Server disappeared");
                 return;
             };
             let offset_encoding = language_server.offset_encoding();

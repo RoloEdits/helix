@@ -52,10 +52,8 @@ macro_rules! language_server_with_feature {
         match language_server {
             Some(language_server) => language_server,
             None => {
-                $editor.set_error(format!(
-                    "No configured language server supports {}",
-                    $feature
-                ));
+                $editor
+                    .set_error(|| format!("No configured language server supports {}", $feature));
                 return;
             }
         }
@@ -120,8 +118,7 @@ fn jump_to_location(editor: &mut Editor, location: &Location, action: Action) {
     push_jump(view, doc);
 
     let Some(path) = location.uri.as_path() else {
-        let err = format!("unable to convert URI to filepath: {:?}", location.uri);
-        editor.set_error(err);
+        editor.set_error(|| format!("unable to convert URI to filepath: {:?}", location.uri));
         return;
     };
     jump_to_position(
@@ -143,8 +140,7 @@ fn jump_to_position(
     let doc = match editor.open(path, action) {
         Ok(id) => doc_mut!(editor, &id),
         Err(err) => {
-            let err = format!("failed to open path: {:?}: {:?}", path, err);
-            editor.set_error(err);
+            editor.set_error(|| format!("failed to open path: {:?}: {:?}", path, err));
             return;
         }
     };
@@ -374,7 +370,7 @@ pub fn symbol_picker(cx: &mut Context) {
 
     if futures.is_empty() {
         cx.editor
-            .set_error("No configured language server supports document symbols");
+            .set_error(|| "No configured language server supports document symbols");
         return;
     }
 
@@ -486,7 +482,7 @@ pub fn workspace_symbol_picker(cx: &mut Context) {
         == 0
     {
         cx.editor
-            .set_error("No configured language server supports workspace symbols");
+            .set_error(|| "No configured language server supports workspace symbols");
         return;
     }
 
@@ -536,7 +532,7 @@ pub fn workspace_symbol_picker(cx: &mut Context) {
             .collect();
 
         if futures.is_empty() {
-            editor.set_error("No configured language server supports workspace symbols");
+            editor.set_error(|| "No configured language server supports workspace symbols");
         }
 
         let injector = injector.clone();
@@ -673,7 +669,7 @@ pub fn code_action(cx: &mut Context) {
 
     if futures.is_empty() {
         cx.editor
-            .set_error("No configured language server supports code actions");
+            .set_error(|| "No configured language server supports code actions");
         return;
     }
 
@@ -693,7 +689,7 @@ pub fn code_action(cx: &mut Context) {
 
         let call = move |editor: &mut Editor, compositor: &mut Compositor| {
             if actions.is_empty() {
-                editor.set_error("No code actions available");
+                editor.set_error(|| "No code actions available");
                 return;
             }
             let mut picker = ui::Menu::new(actions, (), move |editor, action, event| {
@@ -1015,7 +1011,7 @@ where
         }
         let call = move |editor: &mut Editor, compositor: &mut Compositor| {
             if locations.is_empty() {
-                editor.set_error(match feature {
+                editor.set_error(|| match feature {
                     LanguageServerFeature::GotoDeclaration => "No declaration found.",
                     LanguageServerFeature::GotoDefinition => "No definition found.",
                     LanguageServerFeature::GotoTypeDefinition => "No type definition found.",
@@ -1098,7 +1094,7 @@ pub fn goto_reference(cx: &mut Context) {
         }
         let call = move |editor: &mut Editor, compositor: &mut Compositor| {
             if locations.is_empty() {
-                editor.set_error("No references found.");
+                editor.set_error(|| "No references found.");
             } else {
                 goto_impl(editor, compositor, locations);
             }
@@ -1123,7 +1119,7 @@ pub fn hover(cx: &mut Context) {
         == 0
     {
         cx.editor
-            .set_error("No configured language server supports hover");
+            .set_error(|| "No configured language server supports hover");
         return;
     }
 
@@ -1229,7 +1225,7 @@ pub fn rename_symbol(cx: &mut Context) {
                     .find(|ls| language_server_id.is_none_or(|id| id == ls.id()))
                 else {
                     cx.editor
-                        .set_error("No configured language server supports symbol renaming");
+                        .set_error(|| "No configured language server supports symbol renaming");
                     return;
                 };
 
@@ -1245,7 +1241,7 @@ pub fn rename_symbol(cx: &mut Context) {
                             .editor
                             .apply_workspace_edit(offset_encoding, &edits.unwrap_or_default());
                     }
-                    Err(err) => cx.editor.set_error(err.to_string()),
+                    Err(err) => cx.editor.set_error(|| err.to_string()),
                 }
             },
         )
@@ -1263,7 +1259,7 @@ pub fn rename_symbol(cx: &mut Context) {
         .is_none()
     {
         cx.editor
-            .set_error("No configured language server supports symbol renaming");
+            .set_error(|| "No configured language server supports symbol renaming");
         return;
     }
 
@@ -1292,8 +1288,8 @@ pub fn rename_symbol(cx: &mut Context) {
                 let prefill = match get_prefill_from_lsp_response(editor, offset_encoding, response)
                 {
                     Ok(p) => p,
-                    Err(e) => {
-                        editor.set_error(e);
+                    Err(err) => {
+                        editor.set_error(|| err);
                         return;
                     }
                 };
