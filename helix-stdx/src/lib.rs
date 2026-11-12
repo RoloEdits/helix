@@ -13,3 +13,5 @@ pub mod uri;
 
 pub use range::Range;
 pub use uri::Url;
+
+pub mod alloc;

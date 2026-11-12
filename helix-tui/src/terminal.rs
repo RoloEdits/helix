@@ -2,9 +2,11 @@
 //! Frontend for [Backend]
 
 use crate::{backend::Backend, buffer::Buffer};
+use helix_stdx::alloc::Arena;
 use helix_view::editor::{Config as EditorConfig, KittyKeyboardProtocolConfig};
 use helix_view::graphics::{CursorKind, Rect};
 use std::io;
+use std::mem::DropGuard;
 
 #[derive(Debug, Clone, PartialEq)]
 /// UNSTABLE
@@ -56,7 +58,6 @@ pub struct TerminalOptions {
 }
 
 /// Interface to the terminal backed by crossterm
-#[derive(Debug)]
 pub struct Terminal<B>
 where
     B: Backend,
@@ -74,6 +75,8 @@ where
     /// Set to request a full clear. The erase is deferred to the next `flush` so it is emitted
     /// inside the same synchronized-output frame as the repaint to avoid painting blank frames
     force_clear: bool,
+    // Arena for cell diffing.
+    arena: Arena,
 }
 
 /// Default terminal size: 80 columns, 24 lines
@@ -113,6 +116,7 @@ where
             ],
             current: 0,
             cursor_kind: CursorKind::Block,
+            arena: Arena::with_capacity(options.viewport.area.area()),
             viewport: options.viewport,
             force_clear: false,
         })
@@ -152,14 +156,19 @@ where
 
     /// Obtains a difference between the previous and the current buffer and passes it to the
     /// current backend for drawing.
+    #[inline]
     pub fn flush(&mut self) -> io::Result<()> {
         if self.force_clear {
             self.backend.clear()?;
             self.force_clear = false;
         }
+
         let previous_buffer = &self.buffers[1 - self.current];
         let current_buffer = &self.buffers[self.current];
-        let updates = previous_buffer.diff(current_buffer);
+
+        let arena = DropGuard::new(&mut self.arena, Arena::clear);
+        let updates = previous_buffer.diff(current_buffer, &**arena);
+
         self.backend.draw(updates.into_iter())
     }
 

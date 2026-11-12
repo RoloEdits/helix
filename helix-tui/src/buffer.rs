@@ -2,7 +2,7 @@
 use crate::text::{Span, Spans};
 use helix_core::unicode;
 use helix_view::graphics::{Color, Modifier, Rect, Style, UnderlineStyle};
-use std::cmp::min;
+use std::{alloc::Allocator, cmp::min};
 use unicode_segmentation::UnicodeSegmentation;
 
 pub const SYMBOL_CAPACITY: usize = 28;
@@ -762,12 +762,17 @@ impl Buffer {
     /// Next:    `aコ`
     /// Updates: `0: a, 1: コ` (double width symbol at index 1 - skip index 2)
     /// ```
-    pub fn diff<'a>(&self, other: &'a Buffer) -> Vec<(u16, u16, &'a Cell)> {
+    #[inline(always)]
+    pub fn diff<'a, A: Allocator>(
+        &self,
+        other: &'a Buffer,
+        alloc: A,
+    ) -> Vec<(u16, u16, &'a Cell), A> {
         let previous_buffer = self.content.as_slice();
         let next_buffer = other.content.as_slice();
         let width = self.area.width;
 
-        let mut updates: Vec<(u16, u16, &Cell)> = vec![];
+        let mut updates = Vec::new_in(alloc);
         // Cells invalidated by drawing/replacing preceding multi-width characters:
         let mut invalidated: usize = 0;
         // Cells from the current buffer to skip due to preceding multi-width characters taking their
@@ -808,6 +813,8 @@ impl std::ops::IndexMut<(u16, u16)> for Buffer {
 
 #[cfg(test)]
 mod tests {
+    use std::alloc::Global;
+
     use super::*;
 
     fn cell(s: &str) -> Cell {
@@ -922,7 +929,7 @@ mod tests {
         let area = Rect::new(0, 0, 40, 40);
         let prev = Buffer::empty(area);
         let next = Buffer::empty(area);
-        let diff = prev.diff(&next);
+        let diff = prev.diff(&next, Global);
         assert_eq!(diff, vec![]);
     }
 
@@ -931,7 +938,7 @@ mod tests {
         let area = Rect::new(0, 0, 40, 40);
         let prev = Buffer::empty(area);
         let next = Buffer::filled(area, Cell::default().set_symbol("a"));
-        let diff = prev.diff(&next);
+        let diff = prev.diff(&next, Global);
         assert_eq!(diff.len(), 40 * 40);
     }
 
@@ -940,7 +947,7 @@ mod tests {
         let area = Rect::new(0, 0, 40, 40);
         let prev = Buffer::filled(area, Cell::default().set_symbol("a"));
         let next = Buffer::filled(area, Cell::default().set_symbol("a"));
-        let diff = prev.diff(&next);
+        let diff = prev.diff(&next, Global);
         assert_eq!(diff, vec![]);
     }
 
@@ -960,7 +967,7 @@ mod tests {
             "│      │  ",
             "└──────┘  ",
         ]);
-        let diff = prev.diff(&next);
+        let diff = prev.diff(&next, Global);
         assert_eq!(
             diff,
             vec![
@@ -983,7 +990,7 @@ mod tests {
             "┌称号──┐  ",
             "└──────┘  ",
         ]);
-        let diff = prev.diff(&next);
+        let diff = prev.diff(&next, Global);
         assert_eq!(
             diff,
             vec![
@@ -1001,7 +1008,7 @@ mod tests {
         let prev = Buffer::with_lines(vec!["┌称号──┐"]);
         let next = Buffer::with_lines(vec!["┌─称号─┐"]);
 
-        let diff = prev.diff(&next);
+        let diff = prev.diff(&next, Global);
         assert_eq!(
             diff,
             vec![(1, 0, &cell("─")), (2, 0, &cell("称")), (4, 0, &cell("号")),]
@@ -1138,7 +1145,7 @@ mod tests {
         let prev = Buffer::with_lines(vec!["🔥test"]);
         let next = Buffer::with_lines(vec!["xxtest"]);
 
-        let diff = prev.diff(&next);
+        let diff = prev.diff(&next, Global);
 
         // Should update positions where the emoji was
         assert!(diff.iter().any(|(x, _, c)| *x == 0 && &*c.symbol == "x"));

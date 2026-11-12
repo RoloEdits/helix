@@ -5,7 +5,7 @@ use crate::{
 };
 use helix_core::unicode;
 use helix_view::graphics::{CursorKind, Rect};
-use std::{fmt::Write, io};
+use std::{alloc::Global, fmt::Write, io};
 
 /// A backend used for the integration tests.
 #[derive(Debug)]
@@ -69,7 +69,7 @@ impl TestBackend {
 
     pub fn assert_buffer(&self, expected: &Buffer) {
         assert_eq!(expected.area, self.buffer.area);
-        let diff = expected.diff(&self.buffer);
+        let diff = expected.diff(&self.buffer, Global);
         if diff.is_empty() {
             return;
         }
