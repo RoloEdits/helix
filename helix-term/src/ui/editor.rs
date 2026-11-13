@@ -975,7 +975,7 @@ impl EditorView {
                 let icon_style = editor
                     .theme
                     .try_get_exact(stack_format!("icons.kind.{kind}").as_str())
-                    .map_or(style, |style| style);
+                    .unwrap_or(style);
 
                 if let Some(icon) = icons.kind().get(kind) {
                     x = draw_element(
