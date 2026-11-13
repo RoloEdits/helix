@@ -167,6 +167,7 @@ const MAX_WORD_LEN: usize = 50;
 /// Number of words to index between checks of the cancellation handle.
 const CANCEL_CHECK_INTERVAL: usize = 4096;
 
+#[allow(deprecated)]
 type Word = kstring::KString;
 
 #[derive(Debug, Default)]
