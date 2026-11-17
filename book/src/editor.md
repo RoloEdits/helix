@@ -76,12 +76,13 @@
 
 ### `[editor.breadcrumb]` Section
 
-Allows configuration of the breadcrumb navigation bar.
+Configures the breadcrumb navigation bar displayed in the editor.
 
-|  Setting |                 Description                     | Default |
-|----------|-------------------------------------------------|---------|
-| `enable` | Whether to enable the breadcrumb navigation bar | `false` |
-|  `path`  | Selecting how much path information is shown    | `"full"`|
+| Setting     | Description                                                      | Default  |
+|-------------|------------------------------------------------------------------|----------|
+| `enable`    | Enables or disables the breadcrumb navigation bar                | `false`  |
+| `path`      | Controls how much of the file path is displayed                  | `"full"` |
+| `separator` | The string used to separate each segment in the breadcrumb trail | `" > "`  |
 
 ```toml
 [editor.breadcrumb]
